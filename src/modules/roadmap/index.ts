@@ -1,0 +1,179 @@
+import { PluginModule, MCPToolDefinition, MCPToolResult } from '../../types.js';
+import { ProjectAnalyzer } from './project-analyzer.js';
+import { CompetitorService } from './competitor-service.js';
+import { RoadmapGenerator } from './generator.js';
+import { RoadmapStorage } from './storage.js';
+import { createRoadmapTools, createRoadmapToolHandler } from './tools.js';
+
+export class RoadmapModule implements PluginModule {
+  public readonly id = 'roadmap';
+  public readonly name = 'AI Roadmap & Competitor Planner';
+  public readonly description = 'Autonomous project codebase discovery, competitor intelligence benchmarking, and phased MoSCoW roadmap generation.';
+
+  private analyzer: ProjectAnalyzer;
+  private competitorService: CompetitorService;
+  private generator: RoadmapGenerator;
+  private storage: RoadmapStorage;
+  private tools: MCPToolDefinition[];
+  private toolHandler: (name: string, args: Record<string, any>) => Promise<MCPToolResult>;
+
+  constructor(
+    analyzer?: ProjectAnalyzer,
+    competitorService?: CompetitorService,
+    generator?: RoadmapGenerator,
+    storage?: RoadmapStorage
+  ) {
+    this.analyzer = analyzer || new ProjectAnalyzer();
+    this.competitorService = competitorService || new CompetitorService();
+    this.generator = generator || new RoadmapGenerator();
+    this.storage = storage || new RoadmapStorage();
+
+    this.tools = createRoadmapTools();
+    this.toolHandler = createRoadmapToolHandler(
+      this.analyzer,
+      this.competitorService,
+      this.generator,
+      this.storage
+    );
+  }
+
+  public getTools(): MCPToolDefinition[] {
+    return this.tools;
+  }
+
+  public async handleToolCall(toolName: string, args: Record<string, any>): Promise<MCPToolResult> {
+    return this.toolHandler(toolName, args);
+  }
+
+  public async handleHttpRequest(url: URL, req: any, res: any): Promise<boolean> {
+    const pathname = url.pathname;
+    const method = req.method;
+
+    if (!pathname.startsWith('/api/roadmap')) {
+      return false;
+    }
+
+    const sendJson = (statusCode: number, data: any) => {
+      res.writeHead(statusCode, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
+      res.end(JSON.stringify(data));
+    };
+
+    if (method === 'OPTIONS') {
+      res.writeHead(204, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
+      res.end();
+      return true;
+    }
+
+    const parseBody = async (): Promise<any> => {
+      return new Promise((resolve) => {
+        let body = '';
+        req.on('data', (chunk: any) => { body += chunk; });
+        req.on('end', () => {
+          try {
+            resolve(body ? JSON.parse(body) : {});
+          } catch {
+            resolve({});
+          }
+        });
+      });
+    };
+
+    try {
+      const wsPath = url.searchParams.get('workspace') || process.cwd();
+
+      // GET /api/roadmap
+      if (pathname === '/api/roadmap' && method === 'GET') {
+        const roadmap = await this.storage.getRoadmap(wsPath);
+        const discovery = await this.storage.getDiscovery(wsPath);
+        const competitors = await this.storage.getCompetitorAnalysis(wsPath);
+        sendJson(200, { roadmap, discovery, competitors });
+        return true;
+      }
+
+      // POST /api/roadmap/discovery
+      if (pathname === '/api/roadmap/discovery' && method === 'POST') {
+        const body = await parseBody();
+        const targetPath = body.workspacePath || wsPath;
+        const discovery = await this.analyzer.analyzeWorkspace(targetPath);
+        await this.storage.saveDiscovery(discovery, targetPath);
+        sendJson(200, discovery);
+        return true;
+      }
+
+      // POST /api/roadmap/competitors
+      if (pathname === '/api/roadmap/competitors' && method === 'POST') {
+        const body = await parseBody();
+        const targetPath = body.workspacePath || wsPath;
+        let discovery = await this.storage.getDiscovery(targetPath);
+        if (!discovery) {
+          discovery = await this.analyzer.analyzeWorkspace(targetPath);
+          await this.storage.saveDiscovery(discovery, targetPath);
+        }
+        const competitors = await this.competitorService.analyzeCompetitors(discovery);
+        await this.storage.saveCompetitorAnalysis(competitors, targetPath);
+        sendJson(200, competitors);
+        return true;
+      }
+
+      // POST /api/roadmap/generate
+      if (pathname === '/api/roadmap/generate' && method === 'POST') {
+        const body = await parseBody();
+        const targetPath = body.workspacePath || wsPath;
+        let discovery = await this.storage.getDiscovery(targetPath);
+        if (!discovery) {
+          discovery = await this.analyzer.analyzeWorkspace(targetPath);
+          await this.storage.saveDiscovery(discovery, targetPath);
+        }
+        let competitors = await this.storage.getCompetitorAnalysis(targetPath);
+        if (!competitors) {
+          competitors = await this.competitorService.analyzeCompetitors(discovery);
+          await this.storage.saveCompetitorAnalysis(competitors, targetPath);
+        }
+        const roadmap = this.generator.generateRoadmap(discovery, competitors);
+        await this.storage.saveRoadmap(roadmap, targetPath);
+        sendJson(200, roadmap);
+        return true;
+      }
+
+      // POST /api/roadmap/feature/status
+      if (pathname === '/api/roadmap/feature/status' && method === 'POST') {
+        const body = await parseBody();
+        const targetPath = body.workspacePath || wsPath;
+        const updatedRoadmap = await this.storage.updateFeatureStatus(body.featureId, body.status, targetPath);
+        sendJson(200, updatedRoadmap);
+        return true;
+      }
+
+      // POST /api/roadmap/export
+      if (pathname === '/api/roadmap/export' && method === 'POST') {
+        const body = await parseBody();
+        const targetPath = body.workspacePath || wsPath;
+        const roadmap = await this.storage.getRoadmap(targetPath);
+        if (!roadmap) {
+          sendJson(404, { error: 'No roadmap exists to export' });
+          return true;
+        }
+        const competitors = await this.storage.getCompetitorAnalysis(targetPath) || undefined;
+        const md = this.generator.exportToMarkdown(roadmap, competitors);
+        const filePath = await this.storage.exportMarkdownFile(md, targetPath);
+        sendJson(200, { success: true, filePath, markdown: md });
+        return true;
+      }
+
+      sendJson(404, { error: 'Roadmap API route not found' });
+      return true;
+    } catch (err: any) {
+      sendJson(500, { error: err?.message || String(err) });
+      return true;
+    }
+  }
+}

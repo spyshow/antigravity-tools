@@ -1,7 +1,7 @@
 {
   "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "antigravity-toolkit",
-  "displayName": "Prompt Library",
-  "description": "Save, search, interpolate template variables, and paste prompts directly from your prompt library in Antigravity.",
-  "version": "1.0.0"
+  "displayName": "Antigravity Toolkit (Prompts & AI Roadmap)",
+  "description": "Interactive Prompt Library & AI-Assisted Strategic Roadmap with deep project discovery, competitor intelligence, and MoSCoW prioritization (inspired by Aperant).",
+  "version": "1.1.0"
 }

@@ -1,5 +1,6 @@
 import { PluginModule, MCPToolDefinition, MCPToolResult } from '../types.js';
 import { PromptsModule } from './prompts/index.js';
+import { RoadmapModule } from './roadmap/index.js';
 
 export class ModuleRegistry {
   private modules: Map<string, PluginModule> = new Map();
@@ -7,6 +8,9 @@ export class ModuleRegistry {
   constructor() {
     // Register Function 1: Prompts Library
     this.register(new PromptsModule());
+
+    // Register Function 2: AI-Assisted Roadmap & Competitor Planner
+    this.register(new RoadmapModule());
   }
 
   public register(module: PluginModule): void {

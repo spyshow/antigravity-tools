@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prompt Library</title>
+  <title>Antigravity Toolkit - Prompt Library & AI Roadmap</title>
   <link rel="stylesheet" href="/styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,12 +24,31 @@
           </svg>
         </div>
         <div>
-          <h1 class="header-title">Prompt Library</h1>
-          <p class="header-subtitle">Antigravity Toolkit Sidecar</p>
+          <h1 class="header-title">Antigravity Toolkit</h1>
+          <p class="header-subtitle">Prompt Library & AI Strategic Roadmap</p>
         </div>
       </div>
 
-      <div class="header-actions">
+      <!-- Tab Switcher -->
+      <nav class="app-nav-tabs">
+        <button class="nav-tab active" id="tab-btn-prompts">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          Prompt Library
+        </button>
+        <button class="nav-tab" id="tab-btn-roadmap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+            <line x1="8" y1="2" x2="8" y2="18"></line>
+            <line x1="16" y1="6" x2="16" y2="22"></line>
+          </svg>
+          AI Roadmap & Competitors
+        </button>
+      </nav>
+
+      <div class="header-actions" id="prompt-header-actions">
         <button id="btn-export" class="btn btn-secondary" title="Export library to JSON">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -51,57 +70,135 @@
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
-          New
+          New Prompt
         </button>
       </div>
     </header>
 
-    <!-- Controls Bar -->
-    <div class="controls-bar">
-      <!-- Search Input -->
-      <div class="search-wrapper">
-        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <!-- VIEW 1: PROMPT LIBRARY -->
+    <section id="view-prompts" class="view-panel">
+      <!-- Controls Bar -->
+      <div class="controls-bar">
+        <!-- Search Input -->
+        <div class="search-wrapper">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="search-input" placeholder="Search prompts by title, keywords, or content... (Ctrl+K)" autocomplete="off">
+          <button id="search-clear" class="btn-clear hidden">&times;</button>
+        </div>
+
+        <!-- Quick Filter Pills -->
+        <div class="filter-pills" id="category-pills">
+          <button class="pill active" data-category="ALL">All Prompts</button>
+          <button class="pill" data-favorite="true">⭐ Favorites</button>
+        </div>
+      </div>
+
+      <!-- Active Filter Tags row -->
+      <div class="tags-bar hidden" id="tags-bar">
+        <span class="tags-label">Tags:</span>
+        <div class="tags-container" id="tags-container"></div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="stats-row">
+        <span id="prompt-count-text">Loading prompt library...</span>
+        <span class="clipboard-tip">💡 Clicking <b>Paste</b> automatically renders variables & copies straight to your system clipboard!</span>
+      </div>
+
+      <!-- Main Prompts Grid -->
+      <main class="prompts-grid" id="prompts-grid">
+        <!-- Injected via JavaScript -->
+      </main>
+
+      <!-- Empty State -->
+      <div class="empty-state hidden" id="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-        <input type="text" id="search-input" placeholder="Search prompts... (Ctrl+K)" autocomplete="off">
-        <button id="search-clear" class="btn-clear hidden">&times;</button>
+        <h3>No prompts found</h3>
+        <p>Try refining your search query or category filters, or create a new prompt.</p>
+        <button class="btn btn-primary" id="btn-empty-create">Create Prompt</button>
+      </div>
+    </section>
+
+    <!-- VIEW 2: AI ROADMAP & COMPETITOR INTELLIGENCE -->
+    <section id="view-roadmap" class="view-panel hidden">
+      <!-- Roadmap Control Toolbar -->
+      <div class="roadmap-toolbar">
+        <div class="roadmap-ws-info">
+          <span class="badge badge-accent">Target Repository</span>
+          <span id="roadmap-ws-path" class="roadmap-path">Current Project</span>
+        </div>
+        <div class="roadmap-actions">
+          <button id="btn-run-discovery" class="btn btn-secondary" title="Deep codebase scan for tech stack, personas, & vision">
+            🔬 1. Scan Project
+          </button>
+          <button id="btn-run-competitors" class="btn btn-secondary" title="Identify competitors, user pain points & market gaps">
+            🥊 2. Analyze Competitors
+          </button>
+          <button id="btn-run-generate" class="btn btn-primary" title="Synthesize into phased MoSCoW roadmap">
+            ⚡ 3. Generate Roadmap
+          </button>
+          <button id="btn-export-markdown" class="btn btn-secondary" title="Export publication-ready ROADMAP.md to project root">
+            📄 Export ROADMAP.md
+          </button>
+        </div>
       </div>
 
-      <!-- Quick Filter Pills -->
-      <div class="filter-pills" id="category-pills">
-        <button class="pill active" data-category="ALL">All</button>
-        <button class="pill" data-favorite="true">⭐ Favorites</button>
+      <!-- Intelligence Overview Split Cards -->
+      <div class="roadmap-intel-grid">
+        <!-- Discovery Card -->
+        <div class="intel-card" id="card-discovery">
+          <div class="intel-card-header">
+            <div class="intel-title-group">
+              <span class="intel-icon">🔬</span>
+              <h3>Project Discovery (Aperant Model)</h3>
+            </div>
+            <span class="badge" id="discovery-type-badge">Analyzing...</span>
+          </div>
+          <div class="intel-card-body" id="discovery-card-content">
+            <div class="skeleton-loader">Loading project discovery...</div>
+          </div>
+        </div>
+
+        <!-- Competitor Card -->
+        <div class="intel-card" id="card-competitors">
+          <div class="intel-card-header">
+            <div class="intel-title-group">
+              <span class="intel-icon">🥊</span>
+              <h3>Competitor Intelligence & Market Gaps</h3>
+            </div>
+            <span class="badge badge-amber" id="competitor-count-badge">Analyzing...</span>
+          </div>
+          <div class="intel-card-body" id="competitor-card-content">
+            <div class="skeleton-loader">Loading competitor intelligence...</div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- Active Filter Tags row -->
-    <div class="tags-bar hidden" id="tags-bar">
-      <span class="tags-label">Tags:</span>
-      <div class="tags-container" id="tags-container"></div>
-    </div>
+      <!-- MoSCoW Filter & Progress Summary Bar -->
+      <div class="roadmap-filter-bar">
+        <div class="filter-pills" id="moscow-pills">
+          <button class="pill active" data-moscow="ALL">All Features</button>
+          <button class="pill" data-moscow="must">🔴 Must Have (MVP)</button>
+          <button class="pill" data-moscow="should">🟡 Should Have</button>
+          <button class="pill" data-moscow="could">🟢 Could Have</button>
+          <button class="pill" data-moscow="wont">⚪ Won't Have</button>
+        </div>
+        <div class="roadmap-meta-info" id="roadmap-summary-text">
+          Syncing roadmap...
+        </div>
+      </div>
 
-    <!-- Stats row -->
-    <div class="stats-row">
-      <span id="prompt-count-text">Loading prompt library...</span>
-      <span class="clipboard-tip">💡 Click <b>Paste</b> to copy directly to clipboard</span>
-    </div>
-
-    <!-- Main Prompts Grid -->
-    <main class="prompts-grid" id="prompts-grid">
-      <!-- Injected via JavaScript -->
-    </main>
-
-    <!-- Empty State -->
-    <div class="empty-state hidden" id="empty-state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      <h3>No prompts found</h3>
-      <p>Try refining your search query or filters.</p>
-      <button class="btn btn-primary" id="btn-empty-create">Create Prompt</button>
-    </div>
+      <!-- Phased Roadmap Board Container -->
+      <div class="roadmap-phases-container" id="roadmap-phases-container">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
   </div>
 
   <!-- Variable Filling Modal (Paste Prompt) -->
@@ -110,7 +207,7 @@
       <div class="modal-header">
         <div>
           <h2 class="modal-title" id="paste-modal-title">Fill Variables & Paste</h2>
-          <p class="modal-subtitle" id="paste-modal-desc">Configure template variables before pasting.</p>
+          <p class="modal-subtitle" id="paste-modal-desc">Configure template variables for this prompt before pasting.</p>
         </div>
         <button class="modal-close" id="paste-modal-close">&times;</button>
       </div>
@@ -118,13 +215,15 @@
       <div class="modal-body">
         <div class="paste-layout">
           <!-- Variables Inputs Column -->
-          <div class="variables-form" id="variables-inputs-container"></div>
+          <div class="variables-form" id="variables-inputs-container">
+            <!-- Dynamically generated inputs -->
+          </div>
 
           <!-- Live Render Preview Column -->
           <div class="preview-column">
             <div class="preview-header">
               <span class="preview-title">Live Preview (Ready to Paste)</span>
-              <span class="char-count" id="preview-char-count">0 chars</span>
+              <span class="char-count" id="preview-char-count">0 characters</span>
             </div>
             <pre class="preview-box" id="preview-box"></pre>
           </div>
@@ -138,7 +237,7 @@
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
-          Copy to Clipboard
+          Copy & Paste to Clipboard
         </button>
       </div>
     </div>
@@ -150,7 +249,7 @@
       <div class="modal-header">
         <div>
           <h2 class="modal-title" id="edit-modal-title">Create New Prompt</h2>
-          <p class="modal-subtitle">Use {{variable_name}} or {{variable:defaultValue}}.</p>
+          <p class="modal-subtitle">Use {{variable_name}} or {{variable:defaultValue}} for dynamic inputs.</p>
         </div>
         <button class="modal-close" id="edit-modal-close">&times;</button>
       </div>
@@ -185,7 +284,7 @@
             <label for="form-template">Prompt Template *</label>
             <span class="detected-vars" id="detected-vars-pill">0 variables detected</span>
           </div>
-          <textarea id="form-template" rows="9" required placeholder="Write your prompt template here... Use {{var}} or {{var:default}} for placeholders."></textarea>
+          <textarea id="form-template" rows="9" required placeholder="Write your prompt here... Use {{variable_name}} or {{variable:default}} for placeholders."></textarea>
         </div>
       </form>
 
@@ -204,11 +303,11 @@
         <button class="modal-close" id="import-modal-close">&times;</button>
       </div>
       <div class="modal-body">
-        <p class="modal-desc">Paste exported JSON below:</p>
+        <p class="modal-desc">Paste your exported JSON prompt list below:</p>
         <textarea id="import-json-text" rows="8" placeholder="[ { &quot;title&quot;: &quot;...&quot;, &quot;template&quot;: &quot;...&quot; } ]"></textarea>
         <div class="import-mode-options">
           <label><input type="radio" name="import-mode" value="merge" checked> Merge with existing</label>
-          <label><input type="radio" name="import-mode" value="replace"> Replace all</label>
+          <label><input type="radio" name="import-mode" value="replace"> Replace all existing</label>
         </div>
       </div>
       <div class="modal-footer">

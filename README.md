@@ -12,7 +12,16 @@ An extensible productivity plugin for [Google Antigravity](https://antigravity.g
 - **Direct Clipboard Integration**: 1-click or single tool call to render variables and copy straight to your system clipboard (ready to `Ctrl+V` into Antigravity chat or code editor).
 - **Full MCP Server Integration**: Exposes 8 standard Model Context Protocol tools to Antigravity agents.
 - **Interactive Web Dashboard**: Sleek local UI with search, category tabs, tag filters, variable fill modal, live preview, and import/export.
-- **Extensible Modular Architecture**: Built with a clean module system (`src/modules/*`), allowing you to easily add new functions (e.g., Code Snippets, Project Blueprints, Token Optimizers) without touching core server logic.
+
+### Function 2: AI-Assisted Roadmap & Competitor Planner (Aperant Model)
+- **Deep Codebase Discovery**: Automated introspection detecting project type, tech stack (TypeScript, Python, Rust, Go, etc.), target audience personas, value proposition, and technical gaps.
+- **Competitor Intelligence & Pain Point Extraction**: Benchmarks direct & indirect market competitors, extracting real user complaints (Reddit, GitHub Issues, App Reviews) with severity ratings and opportunity angles.
+- **MoSCoW Prioritized Phasing**: Automatically synthesizes features into 3 progressive phases (MVP Foundation, Competitor Differentiation, Ecosystem & Scale) with Must/Should/Could/Won't Have priorities.
+- **Competitor Pain Point Linking**: Features explicitly link back to competitor flaw IDs (e.g., `CP-01`, `CP-02`), ensuring your product roadmap builds features that win market share.
+- **Testable Acceptance Criteria & User Stories**: Every roadmap feature includes structured acceptance criteria and value-driven user stories.
+- **1-Click Feature Implementation Prompts**: Generate copy-paste ready implementation prompts tailored to any feature on the roadmap.
+- **One-Click ROADMAP.md Export**: Export publication-ready GitHub Flavored Markdown roadmaps directly to the repository root.
+- **Extensible Modular Architecture**: Built with a clean module system (`src/modules/*`), allowing you to easily add new functions without touching core server logic.
 
 ---
 
