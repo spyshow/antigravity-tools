@@ -32,6 +32,19 @@ export class WebDashboardServer {
       try {
         const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
 
+        // Antigravity sidecar bridge endpoints
+        if (url.pathname === '/preload.js') {
+          res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+          res.end('// Antigravity Sidecar Preload Bridge\n');
+          return;
+        }
+
+        if (url.pathname === '/shell.css') {
+          res.writeHead(200, { 'Content-Type': 'text/css; charset=utf-8' });
+          res.end('/* Antigravity Sidecar Shell Styles */\n');
+          return;
+        }
+
         // Try API dispatch first
         if (url.pathname.startsWith('/api/')) {
           const handled = await this.registry.dispatchHttpRequest(url, req, res);

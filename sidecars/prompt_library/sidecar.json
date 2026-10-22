@@ -1,0 +1,20 @@
+{
+  "command": "node",
+  "args": [
+    "dist/server.js"
+  ],
+  "description": "Interactive Prompt Library & Template Manager for Antigravity",
+  "display_name": "Prompt Library",
+  "has_web_ui": true,
+  "restart_policy": "always",
+  "ui_config": {
+    "display_name": "Prompt Library",
+    "views": [
+      {
+        "entrypoint": "SIDECAR_UI_ENTRYPOINT_AUX_PANE",
+        "path": "/ui.html",
+        "title": "Prompt Library"
+      }
+    ]
+  }
+}

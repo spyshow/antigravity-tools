@@ -14,7 +14,7 @@ export function getPromptsStoragePath(): string {
 }
 
 export function getDefaultPort(): number {
-  const envPort = process.env.AGY_TOOLKIT_PORT;
+  const envPort = process.env.ANTIGRAVITY_SIDECAR_WEB_PORT || process.env.AGY_TOOLKIT_PORT;
   if (envPort && !isNaN(Number(envPort))) {
     return Number(envPort);
   }
