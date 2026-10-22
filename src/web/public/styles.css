@@ -1114,3 +1114,247 @@ input:focus, textarea:focus {
   color: #fff;
   border-color: var(--accent-blue);
 }
+
+/* ==========================================================================
+   Ideation & Codebase Audits View Styles (Aperant Model)
+   ========================================================================== */
+.badge-purple {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+.health-scores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.health-score-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.health-score-card:hover {
+  transform: translateY(-2px);
+  border-color: #475569;
+}
+
+.health-score-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.health-icon {
+  font-size: 1.25rem;
+}
+
+.health-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.health-score-val {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+  font-family: var(--font-mono);
+  color: #fff;
+}
+
+.health-score-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.score-good {
+  color: #34d399 !important;
+}
+
+.score-warn {
+  color: #fbbf24 !important;
+}
+
+.score-danger {
+  color: #f87171 !important;
+}
+
+/* Ideation Cards */
+.ideation-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ideation-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.15s ease;
+}
+
+.ideation-card:hover {
+  border-color: #475569;
+}
+
+.ideation-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ideation-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-ci {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.badge-perf {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.badge-sec {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.badge-cq {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.badge-critical {
+  background: rgba(220, 38, 38, 0.3);
+  color: #fca5a5;
+  border: 1px solid #ef4444;
+  font-weight: 700;
+}
+
+.badge-high {
+  background: rgba(234, 88, 12, 0.25);
+  color: #fdba74;
+  border: 1px solid #f97316;
+}
+
+.badge-medium {
+  background: rgba(217, 119, 6, 0.2);
+  color: #fcd34d;
+  border: 1px solid #d97706;
+}
+
+.ideation-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.35;
+}
+
+.ideation-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.ideation-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+}
+
+.ideation-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-lbl {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.detail-val {
+  color: var(--text-primary);
+}
+
+.ideation-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.ideation-status-badge {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ideation-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-promote {
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: #c4b5fd;
+  font-size: 0.78rem;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-promote:hover {
+  background: rgba(139, 92, 246, 0.35);
+  color: #fff;
+  border-color: #a855f7;
+}
+
+.btn-promote.promoted {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+  cursor: default;
+}

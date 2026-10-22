@@ -1,0 +1,318 @@
+{
+  "projectName": "antigravity-toolkit",
+  "workspacePath": "D:\\BackUp\\programing_projects\\antigravity_tools",
+  "healthScores": {
+    "securityScore": 70,
+    "performanceScore": 75,
+    "qualityScore": 76,
+    "innovationIndex": 92
+  },
+  "codeImprovements": [
+    {
+      "id": "ci-001",
+      "type": "code_improvements",
+      "title": "Batch Import & Multi-Format Prompt Importer (YAML/CSV)",
+      "description": "Extend the Prompt Library JSON importer to natively parse YAML and CSV formats with automatic tag categorization.",
+      "rationale": "The code in PromptStorage and PromptService already handles JSON validation and merge strategies. Adding a parser abstraction allows developers to import external team prompts effortlessly.",
+      "builds_upon": [
+        "PromptStorage.importPrompts",
+        "PromptService.savePrompt"
+      ],
+      "estimated_effort": "small",
+      "affected_files": [
+        "src/modules/prompts/storage.ts",
+        "src/modules/prompts/service.ts"
+      ],
+      "existing_patterns": [
+        "PromptStorage merge/replace options",
+        "Variable interpolation parser"
+      ],
+      "implementation_approach": "Create a FormatParser strategy pattern that detects YAML/CSV headers, transforms records to PromptItem, and calls existing importPrompts().",
+      "status": "draft",
+      "created_at": "2026-10-22T07:53:48.199Z"
+    },
+    {
+      "id": "ci-002",
+      "type": "code_improvements",
+      "title": "Autonomous Feature Execution Loop via MCP Bridge",
+      "description": "Provide an autonomous agent orchestration loop that takes a roadmap feature, creates a branch, runs tests, and updates status to completed.",
+      "rationale": "RoadmapModule already exposes granular MCP tools for querying and updating feature statuses. Connecting this to git commands and test runners establishes a self-driving developer loop.",
+      "builds_upon": [
+        "RoadmapModule.handleToolCall",
+        "RoadmapStorage.updateFeatureStatus"
+      ],
+      "estimated_effort": "medium",
+      "affected_files": [
+        "src/modules/roadmap/tools.ts",
+        "src/modules/roadmap/index.ts"
+      ],
+      "existing_patterns": [
+        "MCP JSON-RPC Tool Handler",
+        "PluginModule dispatchToolCall"
+      ],
+      "implementation_approach": "Expose a roadmap_execute_feature tool that packages the user story & acceptance criteria into an agent subtask with automated verification.",
+      "status": "draft",
+      "created_at": "2026-10-22T07:53:48.199Z"
+    },
+    {
+      "id": "ci-003",
+      "type": "code_improvements",
+      "title": "Multi-Format Roadmap Exporter (Linear/Jira CSV & JSON-LD)",
+      "description": "Extend the ROADMAP.md generator to export formatted issue CSVs ready for 1-click import into Linear, Jira, or GitHub Projects.",
+      "rationale": "The RoadmapGenerator already maintains structured MoSCoW priorities, acceptance criteria, and user stories. Adding a CSV/JSON-LD serializer enables instant team workflow integration.",
+      "builds_upon": [
+        "RoadmapGenerator.exportToMarkdown",
+        "RoadmapDocument model"
+      ],
+      "estimated_effort": "small",
+      "affected_files": [
+        "src/modules/roadmap/generator.ts",
+        "src/modules/roadmap/tools.ts"
+      ],
+      "existing_patterns": [
+        "RoadmapGenerator phased traversal",
+        "Storage file writer"
+      ],
+      "implementation_approach": "Add exportToCSV() and exportToLinear() methods on RoadmapGenerator mapping Phase -> Milestone and Feature -> Issue.",
+      "status": "draft",
+      "created_at": "2026-10-22T07:53:48.199Z"
+    },
+    {
+      "id": "ci-004",
+      "type": "code_improvements",
+      "title": "Sidecar Live WebSocket State Synchronization",
+      "description": "Upgrade the sidecar HTTP polling mechanism to a lightweight bi-directional WebSocket connection for instant UI updates when MCP tools run.",
+      "rationale": "The web server (src/web/server.ts) currently serves HTTP REST endpoints. Adding a WebSocket handler eliminates client-side polling and reflects agent tool calls in real-time.",
+      "builds_upon": [
+        "src/web/server.ts",
+        "src/web/public/app.js"
+      ],
+      "estimated_effort": "medium",
+      "affected_files": [
+        "src/web/server.ts",
+        "src/web/public/app.js"
+      ],
+      "existing_patterns": [
+        "Node.js HTTP request listener",
+        "Event-driven module lifecycle"
+      ],
+      "implementation_approach": "Attach a WebSocket listener to the HTTP server instance and broadcast \"roadmap:updated\" and \"prompt:pasted\" events to connected sidecar panes.",
+      "status": "draft",
+      "created_at": "2026-10-22T07:53:48.199Z"
+    }
+  ],
+  "performanceOptimizations": [
+    {
+      "id": "perf-001",
+      "type": "performance_optimizations",
+      "title": "Migrate Synchronous Disk I/O to Non-Blocking Async File Streams",
+      "description": "Replace blocking fs.readFileSync and fs.writeFileSync in active request paths with non-blocking fs.promises or stream pipelines.",
+      "rationale": "Synchronous I/O blocks the single-threaded Node.js event loop, preventing concurrent MCP tool requests or sidecar UI interactions.",
+      "category": "io",
+      "impact": "high",
+      "affectedAreas": [
+        ".antigravity/ideation.json",
+        "IDEATION.md",
+        "src/modules/ideation/code-scanner.ts",
+        "src/modules/ideation/service.ts"
+      ],
+      "currentMetric": "Synchronous fs calls execute on the main event thread",
+      "expectedImprovement": "Eliminates event loop delays, providing < 5ms response times under concurrent agent requests",
+      "implementation": "Convert fs.readFileSync to await fs.promises.readFile and adopt atomic temp-file rename patterns for writes.",
+      "tradeoffs": "Requires updating callers to handle promises asynchronously (which most already do).",
+      "estimatedEffort": "small",
+      "status": "draft"
+    },
+    {
+      "id": "perf-002",
+      "type": "performance_optimizations",
+      "title": "Implement In-Memory Read-Through Cache for Prompts & Roadmaps",
+      "description": "Add an in-memory cache layer with mtime invalidation to avoid hitting the filesystem on every read request.",
+      "rationale": "Both PromptService and RoadmapStorage frequently read JSON documents from disk on every search, filter, or API call.",
+      "category": "runtime",
+      "impact": "medium",
+      "affectedAreas": [
+        "src/modules/prompts/storage.ts",
+        "src/modules/roadmap/storage.ts"
+      ],
+      "currentMetric": "Every API request parses JSON from disk from scratch",
+      "expectedImprovement": "Reduces prompt_search and roadmap_get latency from ~8ms to < 0.2ms (40x throughput boost)",
+      "implementation": "Keep cached JavaScript object in memory and check fs.statSync mtime before re-reading.",
+      "tradeoffs": "Slightly higher RAM consumption (< 2MB).",
+      "estimatedEffort": "trivial",
+      "status": "draft"
+    },
+    {
+      "id": "perf-003",
+      "type": "performance_optimizations",
+      "title": "Add ETag and Gzip Compression to Local Web Server",
+      "description": "Serve CSS, JavaScript, and HTML assets with ETag headers and gzip compression for instant sidecar panel reloads.",
+      "rationale": "When the Antigravity sidecar pane is opened or toggled, it re-fetches static assets from localhost without caching.",
+      "category": "network",
+      "impact": "medium",
+      "affectedAreas": [
+        "src/web/server.ts"
+      ],
+      "currentMetric": "Static files served uncompressed without HTTP cache headers",
+      "expectedImprovement": "Near-instantaneous sidecar load time (304 Not Modified)",
+      "implementation": "Add simple zlib gzip stream compression and If-None-Match ETag validation for assets in src/web/public/.",
+      "tradeoffs": "Minimal CPU cost on initial compression.",
+      "estimatedEffort": "trivial",
+      "status": "draft"
+    }
+  ],
+  "securityVulnerabilities": [
+    {
+      "id": "sec-001",
+      "type": "security_hardening",
+      "title": "Harden Workspace Path Resolution Against Directory Traversal",
+      "description": "Workspace paths received via MCP arguments and HTTP endpoints should be strictly validated against the project root.",
+      "rationale": "If an untrusted tool call provides a relative path like \"../../../etc/passwd\", unchecked path.resolve could access files outside the workspace.",
+      "category": "input_validation",
+      "severity": "high",
+      "affectedFiles": [
+        "src/modules/roadmap/tools.ts",
+        "src/modules/roadmap/storage.ts"
+      ],
+      "vulnerability": "CWE-22: Improper Limitation of a Pathname to a Restricted Directory (Path Traversal)",
+      "currentRisk": "Potential read/write access to files outside designated workspace root if manipulated by malicious prompt injection.",
+      "remediation": "Implement a sanitizeWorkspacePath(target, root) helper that verifies targetPath.startsWith(allowedRoot).",
+      "references": [
+        "https://owasp.org/www-community/attacks/Path_Traversal",
+        "https://cwe.mitre.org/data/definitions/22.html"
+      ],
+      "compliance": [
+        "OWASP Top 10 A01:2021",
+        "CWE-22"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "sec-002",
+      "type": "security_hardening",
+      "title": "Restrict Permissive CORS Wildcard on Local REST Bridge",
+      "description": "The local HTTP dashboard sets Access-Control-Allow-Origin: * on API routes. Restrict it to localhost origins or sidecar tokens.",
+      "rationale": "A malicious website visited in the user browser could theoretically make fetch() requests to http://localhost:PORT/api/prompts.",
+      "category": "auth",
+      "severity": "medium",
+      "affectedFiles": [
+        "src/modules/prompts/index.ts",
+        "src/modules/roadmap/index.ts",
+        "src/web/server.ts"
+      ],
+      "vulnerability": "CWE-942: Permissive Cross-Domain Policy with Wildcard (*)",
+      "currentRisk": "Cross-origin browser requests could read or manipulate local prompt and roadmap data.",
+      "remediation": "Validate the Origin request header to match 127.0.0.1, localhost, or require ANTIGRAVITY_SIDECAR_UI_TOKEN.",
+      "references": [
+        "https://cwe.mitre.org/data/definitions/942.html",
+        "https://portswigger.net/web-security/cors"
+      ],
+      "compliance": [
+        "OWASP Top 10 A07:2021",
+        "SOC2"
+      ],
+      "status": "draft"
+    },
+    {
+      "id": "sec-003",
+      "type": "security_hardening",
+      "title": "Enforce Secret & Token Redaction in Prompt Storage",
+      "description": "Add an automated secret detection scanner before saving prompts or roadmaps to prevent accidental leakage of API keys.",
+      "rationale": "Developers frequently copy prompts containing temporary API keys or tokens. Auto-redaction ensures secrets are never saved to plain text files.",
+      "category": "secrets",
+      "severity": "high",
+      "affectedFiles": [
+        "src/modules/prompts/service.ts",
+        "src/modules/prompts/storage.ts"
+      ],
+      "vulnerability": "CWE-798: Use of Hard-coded Credentials / Sensitive Data Exposure",
+      "currentRisk": "Accidental check-in of API keys or credentials in exported prompt library files.",
+      "remediation": "Run regex-based secret detection (OpenAI, Anthropic, GitHub, AWS keys) on prompt templates before saving and offer auto-redaction.",
+      "references": [
+        "https://cwe.mitre.org/data/definitions/798.html",
+        "https://owasp.org/www-project-top-ten/2017/A3_2017-Sensitive_Data_Exposure"
+      ],
+      "compliance": [
+        "PCI-DSS",
+        "SOC2 Type II"
+      ],
+      "status": "draft"
+    }
+  ],
+  "codeQualityIssues": [
+    {
+      "id": "cq-001",
+      "type": "code_quality",
+      "title": "Split Monolithic Web UI Client Script into Dedicated Tab Modules",
+      "description": "The file src/web/public/app.js is growing large (>500 lines) and manages both Prompts, Roadmap, and Ideation tabs in a single script.",
+      "rationale": "Large multi-responsibility frontend scripts increase cognitive load and risk regressions when editing unrelated view behaviors.",
+      "category": "large_files",
+      "severity": "minor",
+      "affectedFiles": [
+        "src/web/public/app.js"
+      ],
+      "currentState": "Single script handling DOM state, API requests, modals, and rendering for all tabs",
+      "proposedChange": "Extract into modular ES modules: prompts-view.js, roadmap-view.js, ideation-view.js with a lightweight app-shell.js coordinator.",
+      "codeExample": "// Proposed:\nimport { initPromptsView } from \"./prompts-view.js\";\nimport { initRoadmapView } from \"./roadmap-view.js\";\nimport { initIdeationView } from \"./ideation-view.js\";",
+      "bestPractice": "Single Responsibility Principle & Component Modularity",
+      "metrics": {
+        "lineCount": 520,
+        "duplicateLines": 15
+      },
+      "estimatedEffort": "small",
+      "breakingChange": false,
+      "status": "draft"
+    },
+    {
+      "id": "cq-002",
+      "type": "code_quality",
+      "title": "Add Automated End-to-End Sidecar UI Token & Port Interop Tests",
+      "description": "Add automated tests verifying that the sidecar correctly responds to ANTIGRAVITY_SIDECAR_WEB_PORT and UI token handshake.",
+      "rationale": "Sidecar reliability is mission-critical for the plugin appearing in Antigravity Aux Pane without runtime crashes.",
+      "category": "test_coverage",
+      "severity": "major",
+      "affectedFiles": [
+        "src/tests/sidecar.test.ts",
+        "src/web/server.ts"
+      ],
+      "currentState": "Unit tests cover services and storage, but sidecar token handshake is verified manually",
+      "proposedChange": "Create src/tests/sidecar.test.ts testing HTTP token authorization and 401 unauthorized rejection.",
+      "bestPractice": "Defense-in-depth automated integration testing",
+      "metrics": {
+        "testCoverage": 82
+      },
+      "estimatedEffort": "small",
+      "breakingChange": false,
+      "status": "draft"
+    },
+    {
+      "id": "cq-003",
+      "type": "code_quality",
+      "title": "Implement Custom Error Hierarchy with Typed MCP Error Codes",
+      "description": "Replace generic new Error() throws with domain-specific classes (e.g. WorkspaceNotFoundError, InvalidFeatureIdError).",
+      "rationale": "Typed errors allow the MCP server to return standardized JSON-RPC error codes (-32602 Invalid params, -32603 Internal error).",
+      "category": "anti_pattern",
+      "severity": "minor",
+      "affectedFiles": [
+        "src/modules/roadmap/storage.ts",
+        "src/modules/prompts/service.ts"
+      ],
+      "currentState": "Functions throw generic Error instances with string messages",
+      "proposedChange": "Create src/errors.ts with PluginError, ValidationError, and StorageError classes.",
+      "bestPractice": "Typed exceptions and standardized JSON-RPC protocol error mapping",
+      "estimatedEffort": "small",
+      "breakingChange": false,
+      "status": "draft"
+    }
+  ],
+  "metadata": {
+    "filesScanned": 53,
+    "linesOfCodeEstimated": 10251,
+    "generatedAt": "2026-10-22T07:53:48.199Z",
+    "scannedPaths": [
+      "src/",
+      "sidecars/",
+      "skills/"
+    ]
+  }
+}

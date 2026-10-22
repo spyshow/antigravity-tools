@@ -21,6 +21,17 @@ An extensible productivity plugin for [Google Antigravity](https://antigravity.g
 - **Testable Acceptance Criteria & User Stories**: Every roadmap feature includes structured acceptance criteria and value-driven user stories.
 - **1-Click Feature Implementation Prompts**: Generate copy-paste ready implementation prompts tailored to any feature on the roadmap.
 - **One-Click ROADMAP.md Export**: Export publication-ready GitHub Flavored Markdown roadmaps directly to the repository root.
+
+### Function 3: Codebase Ideation, Performance & Security Audits (Aperant Model)
+- **4-Pillar Discovery System**:
+  1. **🚀 Code-Revealed Feature Opportunities (`ci-xxx`)**: Extension opportunities naturally enabled by existing architectural patterns.
+  2. **⚡ Performance Bottlenecks (`perf-xxx`)**: Synchronous I/O detection, LRU caching opportunities, and bundle size reduction.
+  3. **🛡️ Security Hardening & Vulnerabilities (`sec-xxx`)**: Static risk auditing for path traversal (CWE-22), credential leaks (CWE-798), wildcard CORS (CWE-942), and DOM injection.
+  4. **🧹 Code Quality & Technical Debt (`cq-xxx`)**: Detection of large files, anti-patterns, and test coverage gaps.
+- **Project Health Score Matrix**: Quantitative scores (0-100) for Security Posture, Runtime Performance, Code Quality, and Innovation Potential.
+- **Direct Bridge to Roadmap**: 1-click **"Promote to Roadmap"** converts any ideation discovery directly into an active, phased MoSCoW feature ticket in `roadmap.json`!
+- **1-Click Remediation Prompts**: Instant copy-paste ready prompts for Antigravity AI pair programmers to fix issues or implement features.
+- **One-Click IDEATION.md Export**: Render and commit publication-grade audit reports into the workspace root.
 - **Extensible Modular Architecture**: Built with a clean module system (`src/modules/*`), allowing you to easily add new functions without touching core server logic.
 
 ---

@@ -519,33 +519,37 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================================================================
-  // TAB NAVIGATION & ROADMAP INITIALIZATION
+  // TAB NAVIGATION & ROADMAP / IDEATION INITIALIZATION
   // ==========================================================================
   const tabPrompts = document.getElementById('tab-btn-prompts');
   const tabRoadmap = document.getElementById('tab-btn-roadmap');
+  const tabIdeation = document.getElementById('tab-btn-ideation');
   const viewPrompts = document.getElementById('view-prompts');
   const viewRoadmap = document.getElementById('view-roadmap');
+  const viewIdeation = document.getElementById('view-ideation');
   const promptHeaderActions = document.getElementById('prompt-header-actions');
 
   function switchTab(target) {
-    if (target === 'prompts') {
-      tabPrompts.classList.add('active');
-      tabRoadmap.classList.remove('active');
-      viewPrompts.classList.remove('hidden');
-      viewRoadmap.classList.add('hidden');
-      promptHeaderActions.classList.remove('hidden');
-    } else {
-      tabRoadmap.classList.add('active');
-      tabPrompts.classList.remove('active');
-      viewRoadmap.classList.remove('hidden');
-      viewPrompts.classList.add('hidden');
-      promptHeaderActions.classList.add('hidden');
+    tabPrompts.classList.toggle('active', target === 'prompts');
+    tabRoadmap.classList.toggle('active', target === 'roadmap');
+    tabIdeation.classList.toggle('active', target === 'ideation');
+
+    viewPrompts.classList.toggle('hidden', target !== 'prompts');
+    viewRoadmap.classList.toggle('hidden', target !== 'roadmap');
+    viewIdeation.classList.toggle('hidden', target !== 'ideation');
+
+    promptHeaderActions.classList.toggle('hidden', target !== 'prompts');
+
+    if (target === 'roadmap') {
       loadRoadmapData();
+    } else if (target === 'ideation') {
+      loadIdeationData();
     }
   }
 
   tabPrompts.addEventListener('click', () => switchTab('prompts'));
   tabRoadmap.addEventListener('click', () => switchTab('roadmap'));
+  tabIdeation.addEventListener('click', () => switchTab('ideation'));
 
   // ==========================================================================
   // ROADMAP LOGIC & EVENT HANDLERS
@@ -903,6 +907,309 @@ Please inspect the current codebase, write clean and modular code fulfilling all
         showToast(`Saved ROADMAP.md successfully to: ${res.filePath}`, 'success');
       } else {
         showToast(res.error || 'Failed to export ROADMAP.md', 'error');
+      }
+    } catch (err) {
+      showToast(`Export failed: ${err.message}`, 'error');
+    }
+  });
+
+  // ==========================================================================
+  // IDEATION & CODEBASE AUDITS LOGIC (APERANT MODEL)
+  // ==========================================================================
+  let ideationReport = null;
+  let activeIdeationCategory = 'ALL';
+
+  async function loadIdeationData() {
+    try {
+      const res = await api('/api/ideation');
+      if (res && res.report) {
+        ideationReport = res.report;
+        renderHealthScores(ideationReport.healthScores);
+        renderIdeationCards(ideationReport);
+      } else {
+        // Auto-run if first time
+        runIdeationAudit(false);
+      }
+    } catch (e) {
+      console.warn('Ideation load error:', e);
+    }
+  }
+
+  async function runIdeationAudit(showNotification = true) {
+    if (showNotification) showToast('💡 Running deep codebase ideation scan...');
+    try {
+      const res = await api('/api/ideation/analyze', { method: 'POST' });
+      if (res) {
+        ideationReport = res;
+        renderHealthScores(ideationReport.healthScores);
+        renderIdeationCards(ideationReport);
+        if (showNotification) showToast('Ideation audit completed!', 'success');
+      }
+    } catch (err) {
+      if (showNotification) showToast(`Ideation audit failed: ${err.message}`, 'error');
+    }
+  }
+
+  function renderHealthScores(scores) {
+    if (!scores) return;
+
+    const secEl = document.getElementById('score-security');
+    const perfEl = document.getElementById('score-performance');
+    const qEl = document.getElementById('score-quality');
+    const innoEl = document.getElementById('score-innovation');
+
+    function applyScoreClass(el, val) {
+      el.textContent = `${val}/100`;
+      el.classList.remove('score-good', 'score-warn', 'score-danger');
+      if (val >= 80) el.classList.add('score-good');
+      else if (val >= 60) el.classList.add('score-warn');
+      else el.classList.add('score-danger');
+    }
+
+    applyScoreClass(secEl, scores.securityScore);
+    applyScoreClass(perfEl, scores.performanceScore);
+    applyScoreClass(qEl, scores.qualityScore);
+    applyScoreClass(innoEl, scores.innovationIndex);
+  }
+
+  function renderIdeationCards(report) {
+    const summaryText = document.getElementById('ideation-summary-text');
+    const container = document.getElementById('ideation-cards-container');
+
+    if (!report) {
+      summaryText.textContent = 'No ideation scan data available.';
+      container.innerHTML = `
+        <div class="empty-state">
+          <h3>No Ideation Findings</h3>
+          <p>Click <b>"Run Ideation Audit"</b> above to inspect your codebase for improvements, performance, and security risks.</p>
+        </div>
+      `;
+      return;
+    }
+
+    // Collect all items into a unified list
+    const allItems = [
+      ...report.codeImprovements.map(i => ({ ...i, pillar: 'code_improvements' })),
+      ...report.performanceOptimizations.map(i => ({ ...i, pillar: 'performance_optimizations' })),
+      ...report.securityVulnerabilities.map(i => ({ ...i, pillar: 'security_hardening' })),
+      ...report.codeQualityIssues.map(i => ({ ...i, pillar: 'code_quality' }))
+    ];
+
+    const filtered = activeIdeationCategory === 'ALL'
+      ? allItems
+      : allItems.filter(i => i.pillar === activeIdeationCategory);
+
+    summaryText.innerHTML = `
+      <b>${allItems.length} Discoveries Mapped</b> (${report.codeImprovements.length} Features, ${report.performanceOptimizations.length} Perf, ${report.securityVulnerabilities.length} Security, ${report.codeQualityIssues.length} Quality) &bull; Files: <b>${report.metadata.filesScanned}</b>
+    `;
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<p class="text-muted" style="padding: 20px; text-align: center;">No items match this category filter.</p>`;
+      return;
+    }
+
+    let html = '';
+
+    for (const item of filtered) {
+      let pillarBadge = '';
+      let severityBadge = '';
+      let detailsHtml = '';
+
+      if (item.pillar === 'code_improvements') {
+        pillarBadge = `<span class="badge badge-ci">🚀 Feature Discovery</span>`;
+        severityBadge = `<span class="badge" style="font-size:0.7rem;">Effort: ${item.estimated_effort.toUpperCase()}</span>`;
+        detailsHtml = `
+          <div class="ideation-detail-item">
+            <span class="detail-lbl">Builds Upon</span>
+            <span class="detail-val">${escapeHtml(item.builds_upon.join(', '))}</span>
+          </div>
+          <div class="ideation-detail-item">
+            <span class="detail-lbl">Affected Files</span>
+            <span class="detail-val" style="font-family: var(--font-mono); font-size: 0.76rem;">${escapeHtml(item.affected_files.join(', '))}</span>
+          </div>
+          <div class="ideation-detail-item" style="grid-column: 1 / -1;">
+            <span class="detail-lbl">Implementation Approach</span>
+            <span class="detail-val">${escapeHtml(item.implementation_approach)}</span>
+          </div>
+        `;
+      } else if (item.pillar === 'performance_optimizations') {
+        pillarBadge = `<span class="badge badge-perf">⚡ Performance</span>`;
+        severityBadge = `<span class="badge badge-${item.impact === 'high' ? 'critical' : 'medium'}">Impact: ${item.impact.toUpperCase()}</span>`;
+        detailsHtml = `
+          <div class="ideation-detail-item">
+            <span class="detail-lbl">Current Metric</span>
+            <span class="detail-val">${escapeHtml(item.currentMetric)}</span>
+          </div>
+          <div class="ideation-detail-item">
+            <span class="detail-lbl">Expected Improvement</span>
+            <span class="detail-val" style="color: #34d399;">${escapeHtml(item.expectedImprovement)}</span>
+          </div>
+          <div class="ideation-detail-item" style="grid-column: 1 / -1;">
+            <span class="detail-lbl">Implementation Steps</span>
+            <span class="detail-val">${escapeHtml(item.implementation)}</span>
+          </div>
+        `;
+      } else if (item.pillar === 'security_hardening') {
+        pillarBadge = `<span class="badge badge-sec">🛡️ Security Risk</span>`;
+        severityBadge = `<span class="badge badge-${item.severity}">${item.severity.toUpperCase()} SEVERITY</span>`;
+        detailsHtml = `
+          <div class="ideation-detail-item">
+            <span class="detail-lbl">Vulnerability</span>
+            <span class="detail-val"><b>${escapeHtml(item.vulnerability)}</b></span>
+          </div>
+          <div class="ideation-detail-item">
+            <span class="detail-lbl">Compliance</span>
+            <span class="detail-val">${escapeHtml(item.compliance.join(', '))}</span>
+          </div>
+          <div class="ideation-detail-item" style="grid-column: 1 / -1;">
+            <span class="detail-lbl">Remediation Guidance</span>
+            <span class="detail-val">${escapeHtml(item.remediation)}</span>
+          </div>
+        `;
+      } else if (item.pillar === 'code_quality') {
+        pillarBadge = `<span class="badge badge-cq">🧹 Code Quality</span>`;
+        severityBadge = `<span class="badge" style="font-size:0.7rem;">Effort: ${item.estimatedEffort.toUpperCase()}</span>`;
+        detailsHtml = `
+          <div class="ideation-detail-item">
+            <span class="detail-lbl">Best Practice</span>
+            <span class="detail-val">${escapeHtml(item.bestPractice)}</span>
+          </div>
+          <div class="ideation-detail-item">
+            <span class="detail-lbl">Affected Files</span>
+            <span class="detail-val" style="font-family: var(--font-mono); font-size: 0.76rem;">${escapeHtml(item.affectedFiles.join(', '))}</span>
+          </div>
+          <div class="ideation-detail-item" style="grid-column: 1 / -1;">
+            <span class="detail-lbl">Proposed Refactoring</span>
+            <span class="detail-val">${escapeHtml(item.proposedChange)}</span>
+          </div>
+        `;
+      }
+
+      const isPromoted = item.status === 'promoted_to_roadmap';
+
+      html += `
+        <div class="ideation-card" id="ideation-card-${item.id}">
+          <div class="ideation-top-row">
+            <div class="ideation-badges">
+              <span class="chip" style="font-weight: 700;">${item.id.toUpperCase()}</span>
+              ${pillarBadge}
+              ${severityBadge}
+            </div>
+            <div class="ideation-status-badge">
+              Status: <b>${item.status}</b>
+            </div>
+          </div>
+          <div class="ideation-title">${escapeHtml(item.title)}</div>
+          <div class="ideation-desc">${escapeHtml(item.description)}</div>
+          <div class="ideation-details-grid">
+            ${detailsHtml}
+          </div>
+          <div class="ideation-footer">
+            <span style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">
+              ${escapeHtml(item.rationale.slice(0, 110))}...
+            </span>
+            <div class="ideation-actions">
+              <button class="btn-promote ${isPromoted ? 'promoted' : ''}" data-idea-id="${item.id}" ${isPromoted ? 'disabled' : ''}>
+                ${isPromoted ? '✔ On Roadmap' : '➕ Promote to Roadmap'}
+              </button>
+              <button class="btn-feature-prompt btn-copy-idea-prompt" data-idea-id="${item.id}" title="Copy AI prompt to implement/fix this finding">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy Prompt
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    container.innerHTML = html;
+
+    // Attach Promote to Roadmap Listeners
+    container.querySelectorAll('.btn-promote:not(.promoted)').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const ideaId = btn.getAttribute('data-idea-id');
+        try {
+          showToast(`Promoting [${ideaId}] to Roadmap...`);
+          const res = await api('/api/ideation/promote', {
+            method: 'POST',
+            body: JSON.stringify({ ideaId })
+          });
+          if (res.success) {
+            showToast(res.message, 'success');
+            btn.classList.add('promoted');
+            btn.textContent = '✔ On Roadmap';
+            btn.disabled = true;
+          }
+        } catch (err) {
+          showToast(`Promotion failed: ${err.message}`, 'error');
+        }
+      });
+    });
+
+    // Attach Copy Prompt Listeners
+    container.querySelectorAll('.btn-copy-idea-prompt').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const ideaId = btn.getAttribute('data-idea-id');
+        const item = allItems.find(i => i.id === ideaId);
+        if (!item) return;
+
+        const promptText = generatePromptForIdeationItem(item, report);
+        try {
+          await navigator.clipboard.writeText(promptText);
+          showToast(`📋 Copied implementation prompt for [${item.id}] ${item.title}!`);
+        } catch {
+          showToast('Failed to copy to clipboard', 'error');
+        }
+      });
+    });
+  }
+
+  function generatePromptForIdeationItem(item, report) {
+    return `### Antigravity Task: Address Ideation Finding [${item.id.toUpperCase()}] ${item.title}
+
+**Context:**
+Project: ${report.projectName}
+Type: ${item.type}
+Rationale: ${item.rationale}
+
+**Description:**
+${item.description}
+
+**Details:**
+${item.affected_files ? `Affected Files: ${item.affected_files.join(', ')}` : ''}
+${item.affectedFiles ? `Affected Files: ${item.affectedFiles.join(', ')}` : ''}
+${item.remediation ? `Remediation Guidance: ${item.remediation}` : ''}
+${item.implementation ? `Implementation: ${item.implementation}` : ''}
+${item.implementation_approach ? `Approach: ${item.implementation_approach}` : ''}
+
+**Instructions:**
+Inspect the referenced files, implement the recommended solution adhering to project patterns, write unit tests to verify the fix/feature, and ensure zero regressions.`;
+  }
+
+  // Ideation Category Pills
+  document.querySelectorAll('#ideation-category-pills button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#ideation-category-pills button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeIdeationCategory = btn.getAttribute('data-ideation-cat');
+      renderIdeationCards(ideationReport);
+    });
+  });
+
+  // Action Buttons
+  document.getElementById('btn-run-ideation').addEventListener('click', () => runIdeationAudit(true));
+
+  document.getElementById('btn-export-ideation').addEventListener('click', async () => {
+    showToast('📄 Exporting IDEATION.md to project root...');
+    try {
+      const res = await api('/api/ideation/export', { method: 'POST' });
+      if (res.success) {
+        showToast(`Saved IDEATION.md successfully to: ${res.filePath}`, 'success');
+      } else {
+        showToast(res.error || 'Failed to export IDEATION.md', 'error');
       }
     } catch (err) {
       showToast(`Export failed: ${err.message}`, 'error');
