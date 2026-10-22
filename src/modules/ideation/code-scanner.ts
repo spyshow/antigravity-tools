@@ -53,11 +53,18 @@ export class CodeScanner {
     '__pycache__',
     '.pytest_cache',
     'venv',
-    '.venv'
+    '.venv',
+    '.antigravity',
+    '.agents',
+    '.claude',
+    '.auto-claude',
+    '.turbo',
+    '.idea',
+    '.vscode'
   ]);
 
   private supportedExtensions = new Set([
-    '.ts', '.tsx', '.js', '.jsx', '.py', '.rs', '.go', '.json', '.html', '.css', '.md'
+    '.ts', '.tsx', '.js', '.jsx', '.py', '.rs', '.go', '.json', '.html', '.css', '.md', '.prisma'
   ]);
 
   public async scanCodebase(workspaceDir: string = process.cwd()): Promise<CodebaseScanResult> {
@@ -71,8 +78,7 @@ export class CodeScanner {
         const entries = fs.readdirSync(dir, { withFileTypes: true });
         for (const entry of entries) {
           if (this.ignoredDirs.has(entry.name) || entry.name.startsWith('.')) {
-            // Keep .antigravity if present, ignore other hidden
-            if (entry.name !== '.antigravity') continue;
+            continue;
           }
 
           const fullPath = path.join(dir, entry.name);
@@ -160,6 +166,21 @@ export class CodeScanner {
       }
       if (f.content.includes('showToast') || f.content.includes('modal-overlay')) {
         patterns.add('Sidecar Responsive Aux Pane Web Dashboard UI');
+      }
+      if (f.relativePath.startsWith('src/app') || f.relativePath.startsWith('app/')) {
+        patterns.add('Next.js App Router (React Server & Client Components)');
+      }
+      if (f.content.includes('prisma.') || f.relativePath.endsWith('schema.prisma')) {
+        patterns.add('Prisma ORM Type-Safe Database Modeling & Migrations');
+      }
+      if (f.relativePath.includes('calculation') || f.content.includes('phaseBalance') || f.content.includes('voltageDrop')) {
+        patterns.add('Deterministic Electrical Physics & Load Balancing Math Engine');
+      }
+      if (f.relativePath.includes('sld') || f.relativePath.includes('riser')) {
+        patterns.add('Interactive Single-Line Diagram (SLD) & Dynamic Canvas Engine');
+      }
+      if (f.content.includes('pdf-lib') || f.content.includes('puppeteer') || f.relativePath.includes('reports/')) {
+        patterns.add('Engineering Submittal & Multi-Tab Calculation Export Pipeline');
       }
     }
 

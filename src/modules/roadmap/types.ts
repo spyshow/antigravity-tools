@@ -30,6 +30,7 @@ export interface CurrentStateAssessment {
 export interface ProjectDiscovery {
   projectName: string;
   projectType: 'web-app' | 'mobile-app' | 'cli' | 'library' | 'api' | 'desktop-app' | 'plugin' | 'other';
+  domain?: 'electrical-cad' | 'devtools-ai' | 'ecommerce' | 'fintech' | 'healthcare' | 'software-platform';
   workspacePath: string;
   techStack: TechStackInfo;
   targetAudience: TargetAudience;

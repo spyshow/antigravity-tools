@@ -7,13 +7,18 @@ export class RoadmapGenerator {
   public generateRoadmap(discovery: ProjectDiscovery, competitorAnalysis: CompetitorAnalysis): RoadmapDocument {
     const roadmapId = `roadmap-${Date.now()}`;
     const { projectName, productVision, targetAudience, currentState } = discovery;
+    const isElectricalCad = /(electrical|voltage|breaker|cable|transformer|power-distribution|phasebalance|procal)/i.test(
+      `${projectName} ${productVision.oneLiner} ${targetAudience.primaryPersona}`
+    );
 
     // Define 3 standard strategic phases (matching Aperant's progressive architecture)
     const phases: RoadmapPhase[] = [
       {
         id: 'phase-1',
         name: 'Phase 1: Foundation & Core Experience',
-        description: 'Core MVP architecture, primary user workflows, and essential reliability foundations.',
+        description: isElectricalCad
+          ? 'Core calculation engines, international standard compliance (IEC/NEC), and primary visual diagramming.'
+          : 'Core MVP architecture, primary user workflows, and essential reliability foundations.',
         order: 1,
         status: currentState.existingFeatures.length > 2 ? 'in_progress' : 'planned',
         features: ['FEAT-01', 'FEAT-02', 'FEAT-03']
@@ -21,7 +26,9 @@ export class RoadmapGenerator {
       {
         id: 'phase-2',
         name: 'Phase 2: Competitor Differentiation & Workflow Power',
-        description: 'Features addressing major competitor user pain points and establishing clear market superiority.',
+        description: isElectricalCad
+          ? 'Features addressing major competitor flaws (ETAP/Caneco): transparent math traces, dual IEC/NEC toggle, and selective TCC coordination.'
+          : 'Features addressing major competitor user pain points and establishing clear market superiority.',
         order: 2,
         status: 'planned',
         features: ['FEAT-04', 'FEAT-05', 'FEAT-06']
@@ -29,15 +36,215 @@ export class RoadmapGenerator {
       {
         id: 'phase-3',
         name: 'Phase 3: Scale, Ecosystem & Autonomous Intelligence',
-        description: 'Advanced ecosystem integrations, telemetry, automation, and team collaboration.',
+        description: isElectricalCad
+          ? 'Multi-tenant cloud collaboration, role-based project review, and AI-assisted electrical design validation.'
+          : 'Advanced ecosystem integrations, telemetry, automation, and team collaboration.',
         order: 3,
         status: 'planned',
         features: ['FEAT-07', 'FEAT-08']
       }
     ];
 
-    // Synthesize features addressing competitor pain points and project gaps
-    const features: RoadmapFeature[] = [
+    const features: RoadmapFeature[] = isElectricalCad
+      ? this.generateElectricalFeatures(projectName, targetAudience.primaryPersona)
+      : this.generateDevToolsFeatures(projectName, targetAudience.primaryPersona);
+
+    return {
+      id: roadmapId,
+      projectName,
+      version: '1.0.0',
+      vision: `${productVision.oneLiner} — ${productVision.valueProposition}`,
+      targetAudience: {
+        primary: targetAudience.primaryPersona,
+        secondary: targetAudience.secondaryPersonas
+      },
+      phases,
+      features,
+      metadata: {
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        generatedBy: 'Antigravity AI Roadmap Engine (Aperant-Inspired)',
+        prioritizationFramework: 'MoSCoW',
+        competitorAnalysisUsed: true
+      }
+    };
+  }
+
+  private generateElectricalFeatures(projectName: string, primaryPersona: string): RoadmapFeature[] {
+    return [
+      {
+        id: 'FEAT-01',
+        title: 'Multi-Standard Electrical Calculation Engine (IEC 60364 & NEC / NEMA)',
+        description: `Harden core calculation engine for cable ampacity, voltage drop, short-circuit fault currents (IEC 60909), and true vector neutral balancing across L1/L2/L3.`,
+        rationale: 'Core foundation ensures 100% calculation accuracy and eliminates manual engineering spreadsheet mistakes.',
+        priority: 'must',
+        complexity: 'high',
+        impact: 'high',
+        phaseId: 'phase-1',
+        dependencies: [],
+        status: 'completed',
+        acceptanceCriteria: [
+          'IEC 60364-5-52 installation method multipliers (A1-G), temperature and grouping derating pass all test suites',
+          'Dual-standard toggle seamlessly maps metric cross-sections (1.5 - 300 mm²) to NEC AWG/kcmil trade sizes',
+          'Short-circuit transformer impedance calculations reflect exact ANSI/IEEE C57.12 standard impedance curves'
+        ],
+        userStories: [
+          `As an ${primaryPersona}, I want automated standards compliance calculations so that my cable and breaker schedules pass municipal inspections without manual spreadsheet errors.`
+        ],
+        competitorInsightIds: ['CP-05']
+      },
+      {
+        id: 'FEAT-02',
+        title: 'Interactive Single-Line Diagram (SLD) & Dynamic Riser Canvas',
+        description: 'Interactive vector diagram designer generating Schematex DSL single-line diagrams and vertical risers directly from project loads.',
+        rationale: 'Eliminates CAD drafting bottlenecks by keeping electrical calculations and schematics perfectly synchronized.',
+        priority: 'must',
+        complexity: 'high',
+        impact: 'high',
+        phaseId: 'phase-1',
+        dependencies: ['FEAT-01'],
+        status: 'completed',
+        acceptanceCriteria: [
+          'Multi-page zoomable SVG canvas with pan, export to high-resolution PNG and vector PDF',
+          'Vertical riser diagram automatically bands per-floor demand, current, and voltage drop in warning/danger colors',
+          'Synchronized feeder breaker annotations reflect exact catalog equipment choices'
+        ],
+        userStories: [
+          `As an ${primaryPersona}, I want visual SLD and riser schematics generated automatically from my load boards so that I can deliver complete submittal drawings in minutes.`
+        ],
+        competitorInsightIds: ['CP-08']
+      },
+      {
+        id: 'FEAT-03',
+        title: 'Multi-Manufacturer Catalog Matching & Apartment Room Templates',
+        description: 'Streamlined floor-level apartment templates with automated A/C density estimation and real ABB / Schneider breaker matching.',
+        rationale: 'Accelerates project setup by over 70% compared to legacy manual desktop data entry.',
+        priority: 'must',
+        complexity: 'medium',
+        impact: 'high',
+        phaseId: 'phase-1',
+        dependencies: ['FEAT-01'],
+        status: 'completed',
+        acceptanceCriteria: [
+          'Room templates auto-calculate connected load and diversified maximum demand',
+          'Breaker matcher selects preferred manufacturer models (ABB Emax 2 / Tmax XT, Schneider Masterpact / ComPacT)',
+          'Recalculate / Rebalance all floors propagates template adjustments instantly across all circuits'
+        ],
+        userStories: [
+          `As an ${primaryPersona}, I want real equipment part numbers and pre-built apartment templates so that my procurement bill of materials matches exact design specs.`
+        ],
+        competitorInsightIds: ['CP-03', 'CP-04']
+      },
+      {
+        id: 'FEAT-04',
+        title: 'Transparent Math Trace Engine ("Show Your Work" Submittal Proof)',
+        description: 'Interactive diagnostic inspection drawer showing symbolic formulas, substituted numerical parameters, and governing standard citations.',
+        rationale: 'Key differentiator against black-box competitor software (ETAP / Caneco); builds instant trust with municipal permit authorities.',
+        priority: 'should',
+        complexity: 'medium',
+        impact: 'high',
+        phaseId: 'phase-2',
+        dependencies: ['FEAT-01'],
+        status: 'in_progress',
+        acceptanceCriteria: [
+          'Clickable calculation cells open trace popover with exact governing citation (e.g. IEC 60364-5-52 §525, NEC 210.19(A))',
+          'One-click copy of step-by-step mathematical derivation for permit authority submittals',
+          'Safety margin badges (PASS / WARN / FAIL) with standard-framed thresholds'
+        ],
+        userStories: [
+          `As an ${primaryPersona}, I want transparent calculation traces so that I can defend my cable sizing to reviewers and building authorities with mathematical certainty.`
+        ],
+        competitorInsightIds: ['CP-06']
+      },
+      {
+        id: 'FEAT-05',
+        title: 'Time-Current Coordination & Selective Protection Curves (TCC)',
+        description: 'Interactive log-log Time-Current Characteristic (TCC) curve viewer with dynamic trip unit profiles and automated selectivity verification.',
+        rationale: 'Solves the difficult engineering requirement of verifying downstream breakers clear faults before main breakers trip.',
+        priority: 'should',
+        complexity: 'high',
+        impact: 'high',
+        phaseId: 'phase-2',
+        dependencies: ['FEAT-01', 'FEAT-03'],
+        status: 'in_progress',
+        acceptanceCriteria: [
+          'Plot electronic and thermal-magnetic trip curves (Ir, Tr, Isd, Tsd, Ii) for upstream and downstream breakers',
+          'Automated selectivity verdicts (FULL / PARTIAL / NONE) based on tested manufacturer coordination tables',
+          'Cascading / backup protection ratings calculated for breaker family pairings'
+        ],
+        userStories: [
+          `As an ${primaryPersona}, I want interactive TCC coordination curves so that I can eliminate nuisance tripping and ensure upstream breakers isolate faults selectively.`
+        ],
+        competitorInsightIds: ['CP-04']
+      },
+      {
+        id: 'FEAT-06',
+        title: 'Submittal-Ready Engineering Schedules & Multi-Tab Excel Exporter',
+        description: 'Export publication-grade panel schedules, cable pull lists, and equipment bills of materials to multi-tab formatted Excel workbooks and watermarked PDFs.',
+        rationale: 'Cuts final submittal package compilation time from hours to one click.',
+        priority: 'should',
+        complexity: 'medium',
+        impact: 'medium',
+        phaseId: 'phase-2',
+        dependencies: ['FEAT-01', 'FEAT-02'],
+        status: 'planned',
+        acceptanceCriteria: [
+          'Excel exporter generates styled multi-tab workbooks (Cover, Load Board, Feeders, Cable Schedule, BOM)',
+          'PDF report generator includes project summary, single-line diagrams, and trace appendices',
+          'Configurable company branding, project metadata, and revision block stamping'
+        ],
+        userStories: [
+          `As an ${primaryPersona}, I want client-ready Excel and PDF deliverables so that our team doesn't spend hours reformatting raw calculation outputs.`
+        ],
+        competitorInsightIds: ['CP-01']
+      },
+      {
+        id: 'FEAT-07',
+        title: 'Multi-Tenant Team Collaboration & Role-Based Permissions',
+        description: 'Enable multiple engineers to collaborate on building projects with real-time locking, revision history snapshots, and change audits.',
+        rationale: 'Disrupts single-seat desktop licenses (ETAP dongles) by enabling modern cloud team engineering.',
+        priority: 'could',
+        complexity: 'high',
+        impact: 'high',
+        phaseId: 'phase-3',
+        dependencies: ['FEAT-01'],
+        status: 'planned',
+        acceptanceCriteria: [
+          'Granular roles (Admin, Lead Engineer, Designer, Viewer) with per-building editing permissions',
+          'One-click project revision branching, comparison diffs, and instant rollback',
+          'Multi-tenant credit gating and trial project onboarding workflow'
+        ],
+        userStories: [
+          `As an ${primaryPersona}, I want centralized cloud project management so that senior engineers can review and stamp designs produced by junior staff.`
+        ],
+        competitorInsightIds: ['CP-02']
+      },
+      {
+        id: 'FEAT-08',
+        title: 'AI-Assisted Electrical Design Review & Anomaly Detection',
+        description: 'Autonomous design review agent that inspects floor loads, detects phase unbalance anomalies, warns of cable derating pitfalls, and suggests optimized transformer sizing.',
+        rationale: 'Acts as a senior QA peer reviewer before electrical submittals reach permit authorities.',
+        priority: 'could',
+        complexity: 'high',
+        impact: 'high',
+        phaseId: 'phase-3',
+        dependencies: ['FEAT-04', 'FEAT-05'],
+        status: 'planned',
+        acceptanceCriteria: [
+          'Automated check for neutral current overload and excessive voltage drop across all feeders',
+          'Intelligent load redistribution recommendations to optimize transformer kVA utilization',
+          'MCP tools allowing AI pair programming agents to query, update loads, and verify code compliance programmatically'
+        ],
+        userStories: [
+          `As an ${primaryPersona}, I want automated AI design reviews so that edge-case compliance mistakes are flagged before plans are sent to city planning.`
+        ],
+        competitorInsightIds: ['CP-07']
+      }
+    ];
+  }
+
+  private generateDevToolsFeatures(projectName: string, primaryPersona: string): RoadmapFeature[] {
+    return [
       {
         id: 'FEAT-01',
         title: 'Core Engine & Modular Architecture',
@@ -55,7 +262,7 @@ export class RoadmapGenerator {
           'Unit test coverage exceeds 80% for core contracts'
         ],
         userStories: [
-          `As a ${targetAudience.primaryPersona}, I want a modular architecture so that new tools can be added reliably.`
+          `As a ${primaryPersona}, I want a modular architecture so that new tools can be added reliably.`
         ],
         competitorInsightIds: []
       },
@@ -69,14 +276,14 @@ export class RoadmapGenerator {
         impact: 'high',
         phaseId: 'phase-1',
         dependencies: ['FEAT-01'],
-        status: 'in_progress',
+        status: 'completed',
         acceptanceCriteria: [
           'Sidecar loads seamlessly inside IDE aux pane with security token handshake',
           'Clean tabbed interface switching between Prompt Library and AI Roadmap',
           'Responsive design with dark mode support matching IDE theme'
         ],
         userStories: [
-          `As a ${targetAudience.primaryPersona}, I want a visual sidecar UI so that I don\'t have to remember manual commands.`
+          `As a ${primaryPersona}, I want a visual sidecar UI so that I don\'t have to remember manual commands.`
         ],
         competitorInsightIds: ['CP-01', 'CP-05']
       },
@@ -111,7 +318,7 @@ export class RoadmapGenerator {
         impact: 'high',
         phaseId: 'phase-2',
         dependencies: ['FEAT-01'],
-        status: 'completed',
+        status: 'in_progress',
         acceptanceCriteria: [
           'Detects package.json, requirements.txt, pyproject.toml, Cargo.toml, go.mod',
           'Extracts README summaries and TODO/FIXME comments',
@@ -207,26 +414,6 @@ export class RoadmapGenerator {
         competitorInsightIds: ['CP-06']
       }
     ];
-
-    return {
-      id: roadmapId,
-      projectName,
-      version: '1.0.0',
-      vision: `${productVision.oneLiner} — ${productVision.valueProposition}`,
-      targetAudience: {
-        primary: targetAudience.primaryPersona,
-        secondary: targetAudience.secondaryPersonas
-      },
-      phases,
-      features,
-      metadata: {
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        generatedBy: 'Antigravity AI Roadmap Engine (Aperant-Inspired)',
-        prioritizationFramework: 'MoSCoW',
-        competitorAnalysisUsed: true
-      }
-    };
   }
 
   /**

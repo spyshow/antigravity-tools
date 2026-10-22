@@ -103,3 +103,15 @@ test('IdeationModule exposes MCP tools and dispatches execution', async () => {
   assert.strictEqual(result.isError, undefined);
   assert.ok(result.content[0].text.includes('healthScores'));
 });
+
+test('IdeationService produces electrical-cad specific improvements and security checks for ProCal', async () => {
+  const procalPath = path.resolve('..', 'ProCal');
+  if (!fs.existsSync(procalPath)) return;
+
+  const service = new IdeationService();
+  const report = await service.generateReport(procalPath);
+
+  assert.strictEqual(report.projectName.toLowerCase(), 'procal');
+  assert.ok(report.codeImprovements.some(i => i.title.toLowerCase().includes('balancing') || i.title.toLowerCase().includes('phase')));
+  assert.ok(report.securityVulnerabilities.some(s => s.title.toLowerCase().includes('math') || s.title.toLowerCase().includes('evaluator') || s.title.toLowerCase().includes('project authorization')));
+});

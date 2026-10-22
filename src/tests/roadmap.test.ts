@@ -124,3 +124,22 @@ test('RoadmapModule exposes MCP tools and handles tool calls', async () => {
   assert.strictEqual(result.isError, undefined);
   assert.ok(result.content[0].text.includes('primaryLanguage'));
 });
+
+test('RoadmapGenerator produces domain-specific features and competitors for electrical-cad projects', async () => {
+  const procalPath = path.resolve('..', 'ProCal');
+  if (!fs.existsSync(procalPath)) return;
+
+  const analyzer = new ProjectAnalyzer();
+  const discovery = await analyzer.analyzeWorkspace(procalPath);
+
+  assert.strictEqual(discovery.domain, 'electrical-cad');
+  assert.ok(discovery.targetAudience.primaryPersona.toLowerCase().includes('electrical'));
+
+  const competitorService = new CompetitorService();
+  const comp = await competitorService.analyzeCompetitors(discovery);
+  assert.ok(comp.competitors.some(c => c.name.includes('ETAP') || c.name.includes('Caneco')));
+
+  const generator = new RoadmapGenerator();
+  const roadmap = generator.generateRoadmap(discovery, comp);
+  assert.ok(roadmap.features.some(f => f.title.toLowerCase().includes('electrical') || f.title.toLowerCase().includes('iec 60364') || f.title.toLowerCase().includes('single-line')));
+});

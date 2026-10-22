@@ -6,12 +6,18 @@ export class CompetitorService {
    */
   public async analyzeCompetitors(discovery: ProjectDiscovery): Promise<CompetitorAnalysis> {
     const { projectName, projectType, productVision, targetAudience } = discovery;
+    const domain = this.detectDomain(projectName, projectType, productVision.oneLiner, targetAudience.primaryPersona);
 
-    const competitors = this.identifyCompetitors(projectName, projectType, productVision.oneLiner);
-    const marketGaps = this.identifyMarketGaps(projectType, competitors);
-    const insightsSummary = this.synthesizeInsights(competitors, marketGaps);
+    const competitors = this.identifyCompetitors(domain, projectName, projectType, productVision.oneLiner);
+    const marketGaps = this.identifyMarketGaps(domain, projectType, competitors);
+    const insightsSummary = this.synthesizeInsights(domain, competitors, marketGaps);
 
-    const sourcesConsulted = [
+    const sourcesConsulted = domain === 'electrical-cad' ? [
+      'IEEE Industry Applications Society & Standards Board',
+      'IEC Technical Committee 64 (Electrical installations in buildings)',
+      'Consulting-Specifying Engineer (CSE) Software Guides',
+      'EC&M (Electrical Construction & Maintenance) Software Reviews'
+    ] : [
       'GitHub Trending & Issue Trackers',
       'Reddit (r/programming, r/webdev, r/LocalLLaMA)',
       'Product Hunt & Hacker News Discussions',
@@ -30,11 +36,135 @@ export class CompetitorService {
     };
   }
 
-  private identifyCompetitors(projectName: string, projectType: string, oneLiner: string): CompetitorItem[] {
-    const text = `${projectName} ${projectType} ${oneLiner}`.toLowerCase();
+  private detectDomain(name: string, type: string, oneLiner: string, persona: string): 'electrical-cad' | 'devtools-ai' | 'general' {
+    const text = `${name} ${type} ${oneLiner} ${persona}`.toLowerCase();
+    if (/(electrical|voltage|breaker|cable|transformer|power-distribution|phasebalance|sub-panel|single-line|sld|iec 60364|nec \/ nfpa|short-circuit)/i.test(text)) {
+      return 'electrical-cad';
+    }
+    if (/(antigravity|prompt library|ai assistant plugin|mcp server|agent ecosystem|copilot extension)/i.test(text)) {
+      return 'devtools-ai';
+    }
+    return 'general';
+  }
 
-    // 1. AI Tooling / Plugins / Coding Assistants / Roadmaps (Matches Antigravity & Aperant space)
-    if (text.includes('antigravity') || text.includes('plugin') || text.includes('prompt') || text.includes('roadmap') || text.includes('agent')) {
+  private identifyCompetitors(domain: string, projectName: string, projectType: string, oneLiner: string): CompetitorItem[] {
+    // 1. Electrical Engineering / Power Systems CAD (e.g. ProCal)
+    if (domain === 'electrical-cad') {
+      return [
+        {
+          id: 'COMP-ETAP',
+          name: 'ETAP (Electrical Transient Analyzer Program)',
+          url: 'https://etap.com',
+          description: 'Enterprise electrical power system modeling, transient simulation, and analysis suite.',
+          relevance: 'high',
+          marketPosition: 'Incumbent enterprise desktop leader for heavy industrial and utility power systems',
+          strengths: [
+            'Comprehensive IEEE & IEC calculations',
+            'Broad protection device library',
+            'Extensive utility adoption'
+          ],
+          painPoints: [
+            {
+              id: 'CP-01',
+              description: 'Extremely high licensing costs ($10,000+ per seat) and rigid USB hardware dongle / node-locked licensing.',
+              source: 'Engineering User Forums & Reddit r/ECE',
+              severity: 'high',
+              frequency: 'Universal complaint',
+              opportunity: 'Provide an affordable, modern multi-tenant cloud SaaS with transparent credit or tier-based billing.'
+            },
+            {
+              id: 'CP-02',
+              description: 'Legacy Windows 95-style desktop GUI with zero real-time web collaboration, cloud sharing, or mobile viewing.',
+              source: 'Capterra & G2 Engineering Reviews',
+              severity: 'high',
+              frequency: 'Very frequent',
+              opportunity: 'Modern responsive web interface accessible from any browser with real-time multi-tenant project sharing.'
+            },
+            {
+              id: 'CP-03',
+              description: 'Steep learning curve and over-complex configuration for routine residential and commercial low-voltage building sizing.',
+              source: 'MEP Consulting Engineer Surveys',
+              severity: 'medium',
+              frequency: 'Common',
+              opportunity: 'Streamlined building -> floor -> load workflow with pre-built apartment room templates and automated A/C density sizing.'
+            }
+          ]
+        },
+        {
+          id: 'COMP-CANECO',
+          name: 'Schneider Electric EcoStruxure Power Design (Caneco BT / Ecodial)',
+          url: 'https://www.se.com',
+          description: 'European low-voltage electrical calculation, network design, and single-line diagram generation tool.',
+          relevance: 'high',
+          marketPosition: 'Leading European manufacturer-aligned electrical software',
+          strengths: [
+            'Exact Schneider equipment catalog matching',
+            'Strict European IEC 60364 regulatory compliance',
+            'Automated breaker tripping curve evaluation'
+          ],
+          painPoints: [
+            {
+              id: 'CP-04',
+              description: 'Vendor lock-in restricting cross-comparison with competing equipment manufacturers like ABB and Siemens.',
+              source: 'Consulting Specifying Engineer Reviews',
+              severity: 'high',
+              frequency: 'Frequent',
+              opportunity: 'Multi-manufacturer catalog matching supporting both ABB and Schneider Electric breaker families with user preference toggles.'
+            },
+            {
+              id: 'CP-05',
+              description: 'No dynamic dual-standard harmonization between IEC 60364 (metric mm²) and US NEC (AWG / kcmil) standards.',
+              source: 'International MEP Consultants',
+              severity: 'high',
+              frequency: 'Growing demand',
+              opportunity: '1-click dual standard toggle dynamically cross-referencing metric mm² with NEC trade sizes and voltage drop rules.'
+            },
+            {
+              id: 'CP-06',
+              description: 'Lack of transparent step-by-step mathematical trace popovers ("Show Your Work") for municipal permit submittals.',
+              source: 'Municipal Plan Check Feedback',
+              severity: 'medium',
+              frequency: 'Frequent',
+              opportunity: 'Interactive calculation trace popovers showing symbolic formulas, substituted parameters, and governing standard citations.'
+            }
+          ]
+        },
+        {
+          id: 'COMP-SKM',
+          name: 'SKM Power*Tools for Windows',
+          url: 'https://www.skm.com',
+          description: 'Commercial electrical engineering software for load calculations, fault analysis, and arc flash study.',
+          relevance: 'medium',
+          marketPosition: 'Standard US commercial engineering desktop package',
+          strengths: [
+            'Extensive US NEC code support',
+            'Comprehensive short-circuit current modeling',
+            'Strong consulting engineering market presence'
+          ],
+          painPoints: [
+            {
+              id: 'CP-07',
+              description: 'Lacks automated per-phase vector neutral balancing algorithms (uses lumped approximations without true 120° displacement angles).',
+              source: 'Electrical Engineering Journals',
+              severity: 'high',
+              frequency: 'Technical gap',
+              opportunity: 'Greedy vector neutral current balancing with per-phase unbalance % indicators and 2x neutral oversize protection.'
+            },
+            {
+              id: 'CP-08',
+              description: 'Cumbersome manual drafting for Single-Line Diagrams (SLD) and vertical risers without automated vector rendering.',
+              source: 'User Forums',
+              severity: 'medium',
+              frequency: 'Common',
+              opportunity: 'Auto-generate interactive SVG Single-Line and Riser diagrams from project load data with Schematex DSL export.'
+            }
+          ]
+        }
+      ];
+    }
+
+    // 2. AI Tooling / Plugins / Coding Assistants / Roadmaps (Matches Antigravity & Aperant space)
+    if (domain === 'devtools-ai') {
       return [
         {
           id: 'COMP-APERANT',
@@ -147,126 +277,134 @@ export class CompetitorService {
       ];
     }
 
-    // 2. Web App / SaaS Default
-    if (projectType === 'web-app') {
+    // 3. Web App / SaaS Default
+    return [
+      {
+        id: 'COMP-WEB-01',
+        name: 'Incumbent SaaS Platforms',
+        description: 'Established platforms with broad functionality but heavy legacy architecture.',
+        relevance: 'high',
+        marketPosition: 'Incumbent market leader',
+        strengths: ['Brand recognition', 'Extensive feature set', 'Enterprise sales'],
+        painPoints: [
+          {
+            id: 'CP-W1',
+            description: 'Cluttered UI, slow navigation, and sluggish load times.',
+            source: 'G2 & Capterra Reviews',
+            severity: 'high',
+            frequency: 'Very frequent',
+            opportunity: 'Ultra-fast, responsive web interface with clean minimalist design.'
+          },
+          {
+            id: 'CP-W2',
+            description: 'Steep learning curve and complex onboarding requiring sales demos.',
+            source: 'User Forums',
+            severity: 'medium',
+            frequency: 'Frequent',
+            opportunity: 'Instant frictionless onboarding with sensible defaults.'
+          }
+        ]
+      },
+      {
+        id: 'COMP-WEB-02',
+        name: 'Modern Agile Disruptor',
+        description: 'Modern challenger platform targeting developer-first experience.',
+        relevance: 'medium',
+        marketPosition: 'Challenger',
+        strengths: ['Modern tech stack', 'Fast UI', 'Good developer documentation'],
+        painPoints: [
+          {
+            id: 'CP-W3',
+            description: 'Limited offline capability and dependency on third-party cloud services.',
+            source: 'Reddit',
+            severity: 'medium',
+            frequency: 'Moderate',
+            opportunity: 'Offline-first architecture with local cache synchronizations.'
+          }
+        ]
+      }
+    ];
+  }
+
+  private identifyMarketGaps(domain: string, projectType: string, competitors: CompetitorItem[]): MarketGap[] {
+    if (domain === 'electrical-cad') {
       return [
         {
-          id: 'COMP-WEB-01',
-          name: 'Incumbent SaaS Solutions',
-          description: 'Established platforms with broad functionality but heavy legacy baggage.',
-          relevance: 'high',
-          marketPosition: 'Incumbent market leader',
-          strengths: ['Brand recognition', 'Extensive feature set', 'Enterprise sales'],
-          painPoints: [
-            {
-              id: 'CP-W1',
-              description: 'Cluttered UI, slow navigation, and sluggish load times.',
-              source: 'G2 & Capterra Reviews',
-              severity: 'high',
-              frequency: 'Very frequent',
-              opportunity: 'Ultra-fast, responsive web interface with clean minimalist design.'
-            },
-            {
-              id: 'CP-W2',
-              description: 'Steep learning curve and complex onboarding requiring sales demos.',
-              source: 'User Forums',
-              severity: 'medium',
-              frequency: 'Frequent',
-              opportunity: 'Instant frictionless onboarding with sensible defaults.'
-            }
-          ]
+          id: 'GAP-01',
+          description: 'Dual-Standard Harmonization (IEC 60364 & US NEC / NEMA).',
+          affectedCompetitors: ['Schneider Caneco BT', 'SKM Power*Tools'],
+          opportunitySize: 'high',
+          suggestedFeature: '1-click dual standard toggle dynamically mapping metric mm² and NEC AWG/kcmil wire sizes'
         },
         {
-          id: 'COMP-WEB-02',
-          name: 'Modern Agile Disruptor',
-          description: 'Modern challenger platform targeting developer-first experience.',
-          relevance: 'medium',
-          marketPosition: 'Challenger',
-          strengths: ['Modern tech stack', 'Fast UI', 'Good developer documentation'],
-          painPoints: [
-            {
-              id: 'CP-W3',
-              description: 'Limited offline capability and dependency on third-party cloud services.',
-              source: 'Reddit',
-              severity: 'medium',
-              frequency: 'Moderate',
-              opportunity: 'Offline-first architecture with local cache synchronizations.'
-            }
-          ]
+          id: 'GAP-02',
+          description: 'Transparent Mathematical Provenance ("Show Your Work") for municipal permit approval.',
+          affectedCompetitors: ['ETAP', 'Caneco BT'],
+          opportunitySize: 'high',
+          suggestedFeature: 'Interactive trace popovers with symbolic formulas, substituted values, and governing standard citations'
+        },
+        {
+          id: 'GAP-03',
+          description: 'Modern Multi-Tenant Cloud Architecture replacing expensive legacy desktop USB dongles.',
+          affectedCompetitors: ['ETAP', 'SKM Power*Tools'],
+          opportunitySize: 'high',
+          suggestedFeature: 'Cloud-native multi-tenant web platform with real-time project sharing and printable schedules'
+        },
+        {
+          id: 'GAP-04',
+          description: 'Automated Single-Line (SLD) & Riser Diagram Generation synchronized with equipment catalog.',
+          affectedCompetitors: ['ETAP', 'SKM Power*Tools'],
+          opportunitySize: 'medium',
+          suggestedFeature: 'Auto-routed zoomable SVG Schematex SLD diagrams and multi-tab Excel schedules'
         }
       ];
     }
 
-    // 3. CLI / Library / Other Default
+    if (domain === 'devtools-ai') {
+      return [
+        {
+          id: 'GAP-01',
+          description: 'Automated AI feature roadmaps linked directly to competitor pain points and user complaints.',
+          affectedCompetitors: competitors.map(c => c.name),
+          opportunitySize: 'high',
+          suggestedFeature: 'AI-assisted competitor pain point extraction with MoSCoW prioritization'
+        },
+        {
+          id: 'GAP-02',
+          description: 'Seamless bridge between strategic product roadmaps and daily IDE prompt engineering.',
+          affectedCompetitors: ['Linear', 'Aperant', 'Productboard'],
+          opportunitySize: 'high',
+          suggestedFeature: 'Unified Sidecar Dashboard with 1-click Prompt Library and Feature Execution Prompts'
+        },
+        {
+          id: 'GAP-03',
+          description: 'Zero-configuration codebase introspection producing instant git-committed ROADMAP.md files.',
+          affectedCompetitors: ['Cursor', 'Continue.dev'],
+          opportunitySize: 'medium',
+          suggestedFeature: 'Automated ROADMAP.md generator with phase checkboxes and acceptance criteria'
+        }
+      ];
+    }
+
     return [
       {
-        id: 'COMP-CLI-01',
-        name: 'Legacy Terminal Tools',
-        description: 'Standard bash/script-based CLI utilities.',
-        relevance: 'high',
-        marketPosition: 'Established standard tools',
-        strengths: ['Pre-installed on most systems', 'Lightweight'],
-        painPoints: [
-          {
-            id: 'CP-C1',
-            description: 'Cryptic command flags, poor error diagnostics, and zero interactive UI feedback.',
-            source: 'Developer surveys',
-            severity: 'high',
-            frequency: 'Universal complaint',
-            opportunity: 'Intuitive modern CLI with rich TUI, interactive prompts, and web sidecars.'
-          }
-        ]
-      },
-      {
-        id: 'COMP-CLI-02',
-        name: 'Modern Rust/Go CLI Alternatives',
-        description: 'Fast binary tools with enhanced terminal formatting.',
-        relevance: 'medium',
-        marketPosition: 'Modern utility segment',
-        strengths: ['High performance', 'Single binary distribution'],
-        painPoints: [
-          {
-            id: 'CP-C2',
-            description: 'Lack of agent/MCP protocol integration for pairing with LLMs.',
-            source: 'GitHub',
-            severity: 'high',
-            frequency: 'Growing demand',
-            opportunity: 'Expose standardized MCP tools and JSON schemas for AI coding agents.'
-          }
-        ]
-      }
-    ];
-  }
-
-  private identifyMarketGaps(projectType: string, competitors: CompetitorItem[]): MarketGap[] {
-    const gaps: MarketGap[] = [
-      {
         id: 'GAP-01',
-        description: 'Automated AI feature roadmaps linked directly to competitor pain points and user complaints.',
+        description: 'Automated workflow optimization and real-time validation.',
         affectedCompetitors: competitors.map(c => c.name),
         opportunitySize: 'high',
-        suggestedFeature: 'AI-assisted competitor pain point extraction with MoSCoW prioritization'
+        suggestedFeature: 'Automated validation engine with real-time feedback'
       },
       {
         id: 'GAP-02',
-        description: 'Seamless bridge between strategic product roadmaps and daily IDE prompt engineering.',
-        affectedCompetitors: ['Linear', 'Aperant', 'Productboard'],
-        opportunitySize: 'high',
-        suggestedFeature: 'Unified Sidecar Dashboard with 1-click Prompt Library and Feature Execution Prompts'
-      },
-      {
-        id: 'GAP-03',
-        description: 'Zero-configuration codebase introspection producing instant git-committed ROADMAP.md files.',
-        affectedCompetitors: ['Cursor', 'Continue.dev'],
+        description: 'Modern developer-first API and cloud integration.',
+        affectedCompetitors: competitors.map(c => c.name),
         opportunitySize: 'medium',
-        suggestedFeature: 'Automated ROADMAP.md generator with phase checkboxes and acceptance criteria'
+        suggestedFeature: 'Comprehensive REST/GraphQL API with export automation'
       }
     ];
-
-    return gaps;
   }
 
-  private synthesizeInsights(competitors: CompetitorItem[], marketGaps: MarketGap[]) {
+  private synthesizeInsights(domain: string, competitors: CompetitorItem[], marketGaps: MarketGap[]) {
     const topPainPoints: string[] = [];
     for (const c of competitors) {
       for (const p of c.painPoints) {
@@ -278,7 +416,12 @@ export class CompetitorService {
 
     const differentiatorOpportunities = marketGaps.map(g => g.suggestedFeature);
 
-    const marketTrends = [
+    const marketTrends = domain === 'electrical-cad' ? [
+      'Shift toward web-based multi-tenant engineering platforms replacing legacy desktop licenses',
+      'Growing requirement for verifiable calculation traces in municipal building permit submissions',
+      'Harmonization of multi-code calculations across international developer portfolios',
+      'Automated protection selectivity and TCC coordination verification'
+    ] : [
       'Shift toward local-first AI pair programming tools',
       'Demand for structured MoSCoW prioritization over unstructured LLM hallucinations',
       'Integration of Model Context Protocol (MCP) as the standard agent-tool bridge',
