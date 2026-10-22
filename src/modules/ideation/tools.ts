@@ -1,6 +1,7 @@
 import { MCPToolDefinition, MCPToolResult } from '../../types.js';
 import { IdeationService } from './service.js';
 import { IdeationStorage } from './storage.js';
+import { normalizeWorkspacePath, getActiveWorkspace } from '../workspace.js';
 
 export function createIdeationTools(): MCPToolDefinition[] {
   return [
@@ -74,7 +75,7 @@ export function createIdeationToolHandler(
 ) {
   return async (name: string, args: Record<string, any>): Promise<MCPToolResult> => {
     try {
-      const wsPath = args.workspacePath ? String(args.workspacePath) : process.cwd();
+      const wsPath = normalizeWorkspacePath(args.workspacePath || getActiveWorkspace());
 
       switch (name) {
         case 'ideation_analyze': {

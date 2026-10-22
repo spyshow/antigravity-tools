@@ -1,5 +1,6 @@
 import { MCPToolDefinition, MCPToolResult } from '../../types.js';
 import { AgencyService } from './service.js';
+import { normalizeWorkspacePath, getActiveWorkspace } from '../workspace.js';
 
 export function createAgencyTools(): MCPToolDefinition[] {
   return [
@@ -48,7 +49,7 @@ export function createAgencyTools(): MCPToolDefinition[] {
 export function createAgencyToolHandler(service: AgencyService) {
   return async (name: string, args: Record<string, any>): Promise<MCPToolResult> => {
     try {
-      const wsPath = args.workspacePath ? String(args.workspacePath) : process.cwd();
+      const wsPath = normalizeWorkspacePath(args.workspacePath || getActiveWorkspace());
 
       switch (name) {
         case 'agency_integrate': {

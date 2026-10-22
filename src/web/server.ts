@@ -1,9 +1,17 @@
 import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { fileURLToPath } from 'url';
 import { ModuleRegistry } from '../modules/registry.js';
 import { getDefaultPort } from '../config.js';
+import {
+  getActiveWorkspace,
+  setActiveWorkspace,
+  normalizeWorkspacePath,
+  getConversationMetadata,
+  resolveWorkspaceFromConversation
+} from '../modules/workspace.js';
 
 export class WebDashboardServer {
   private server: http.Server | null = null;
@@ -15,13 +23,76 @@ export class WebDashboardServer {
     this.port = port || getDefaultPort();
   }
 
+  private resolvePreloadJs(): string {
+    const userHome = process.env.USERPROFILE || process.env.HOME || os.homedir();
+    const candidates = [
+      path.join(userHome, '.gemini', 'antigravity', 'lib', 'node_modules', 'sidecar_sdk', 'preload.js'),
+      path.join(userHome, '.gemini', 'config', 'node_modules', 'sidecar_sdk', 'preload.js'),
+      path.join(process.env.ANTIGRAVITY_APP_DATA_DIR || '', 'lib', 'node_modules', 'sidecar_sdk', 'preload.js')
+    ];
+
+    for (const p of candidates) {
+      if (fs.existsSync(p)) {
+        return fs.readFileSync(p, 'utf8');
+      }
+    }
+
+    // High-fidelity fallback if sidecar_sdk is not found on disk
+    return `
+/**
+ * Standalone Antigravity Sidecar Bridge Fallback
+ */
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const conversationId = params.get('conversationId');
+
+  let currentWorkspaceUris = [];
+  let hasInitialWorkspace = false;
+  const workspaceListeners = new Set();
+
+  function notifyWorkspaceListener(listener) {
+    try {
+      listener([...currentWorkspaceUris]);
+    } catch (err) {
+      console.error('workspace-change listener failed:', err);
+    }
+  }
+
+  window.addEventListener('message', (event) => {
+    if (event.data?.type === 'workspace-change') {
+      const payload = event.data.payload ?? {};
+      const nextUris = Array.isArray(payload.workspaceUris) ? [...payload.workspaceUris] : [];
+      currentWorkspaceUris = nextUris;
+      hasInitialWorkspace = true;
+      for (const listener of workspaceListeners) {
+        notifyWorkspaceListener(listener);
+      }
+    }
+  });
+
+  window.sidecar = {
+    conversationId,
+    getWorkspaceUris: async () => [...currentWorkspaceUris],
+    onWorkspaceChange(listener) {
+      if (typeof listener !== 'function') return () => {};
+      workspaceListeners.add(listener);
+      if (hasInitialWorkspace) {
+        queueMicrotask(() => notifyWorkspaceListener(listener));
+      }
+      return () => workspaceListeners.delete(listener);
+    }
+  };
+})();
+`;
+  }
+
   public async start(listenPort?: number): Promise<number> {
     const desiredPort = listenPort || this.port;
 
     // Resolve public assets directory
     let publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'public');
     if (!fs.existsSync(publicDir)) {
-      // Check relative to cwd or src
       const altDir = path.join(process.cwd(), 'src', 'web', 'public');
       if (fs.existsSync(altDir)) {
         publicDir = altDir;
@@ -31,18 +102,114 @@ export class WebDashboardServer {
     this.server = http.createServer(async (req, res) => {
       try {
         const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+        const method = (req.method || 'GET').toUpperCase();
+
+        const sendJson = (statusCode: number, data: any) => {
+          res.writeHead(statusCode, {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, X-Sidecar-Token'
+          });
+          res.end(JSON.stringify(data));
+        };
+
+        if (method === 'OPTIONS') {
+          res.writeHead(204, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, X-Sidecar-Token'
+          });
+          res.end();
+          return;
+        }
+
+        const parseBody = async (): Promise<any> => {
+          return new Promise((resolve) => {
+            let body = '';
+            req.on('data', (chunk: any) => { body += chunk; });
+            req.on('end', () => {
+              try {
+                resolve(body ? JSON.parse(body) : {});
+              } catch {
+                resolve({});
+              }
+            });
+          });
+        };
 
         // Antigravity sidecar bridge endpoints
         if (url.pathname === '/preload.js') {
-          res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
-          res.end('// Antigravity Sidecar Preload Bridge\n');
+          res.writeHead(200, {
+            'Content-Type': 'application/javascript; charset=utf-8',
+            'Access-Control-Allow-Origin': '*'
+          });
+          res.end(this.resolvePreloadJs());
           return;
         }
 
         if (url.pathname === '/shell.css') {
-          res.writeHead(200, { 'Content-Type': 'text/css; charset=utf-8' });
+          res.writeHead(200, {
+            'Content-Type': 'text/css; charset=utf-8',
+            'Access-Control-Allow-Origin': '*'
+          });
           res.end('/* Antigravity Sidecar Shell Styles */\n');
           return;
+        }
+
+        // Bridge: /_sidecar/get-conversation-metadata
+        if (url.pathname === '/_sidecar/get-conversation-metadata') {
+          const body = await parseBody();
+          const convId = body.conversationId || url.searchParams.get('conversationId');
+          if (convId) {
+            const meta = await getConversationMetadata(convId);
+            if (meta) {
+              sendJson(200, meta);
+              return;
+            }
+          }
+          sendJson(200, { response: { conversationMetadata: { metadata: { workspaceUris: [getActiveWorkspace()] } } } });
+          return;
+        }
+
+        // Workspace management endpoints
+        if (url.pathname === '/api/workspace') {
+          if (method === 'GET') {
+            const convId = url.searchParams.get('conversationId');
+            if (convId) {
+              await resolveWorkspaceFromConversation(convId);
+            }
+            const queryWs = url.searchParams.get('workspace');
+            if (queryWs) {
+              setActiveWorkspace(queryWs);
+            }
+            const current = getActiveWorkspace();
+            sendJson(200, {
+              success: true,
+              workspace: current,
+              name: path.basename(current)
+            });
+            return;
+          }
+
+          if (method === 'POST') {
+            const body = await parseBody();
+            if (body.workspace) {
+              setActiveWorkspace(body.workspace);
+            }
+            const current = getActiveWorkspace();
+            sendJson(200, {
+              success: true,
+              workspace: current,
+              name: path.basename(current)
+            });
+            return;
+          }
+        }
+
+        // Auto-synchronize workspace if passed as query parameter
+        if (url.searchParams.has('workspace')) {
+          setActiveWorkspace(url.searchParams.get('workspace')!);
         }
 
         // Try API dispatch first
@@ -50,8 +217,7 @@ export class WebDashboardServer {
           const handled = await this.registry.dispatchHttpRequest(url, req, res);
           if (handled) return;
 
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Endpoint not found' }));
+          sendJson(404, { error: 'Endpoint not found' });
           return;
         }
 
@@ -108,7 +274,6 @@ export class WebDashboardServer {
 
       this.server!.on('error', (err: any) => {
         if (err.code === 'EADDRINUSE') {
-          // Retry on next port
           this.server!.listen(0, () => {
             const address = this.server!.address();
             const actualPort = typeof address === 'object' && address ? address.port : desiredPort + 1;

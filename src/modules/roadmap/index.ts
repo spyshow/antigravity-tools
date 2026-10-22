@@ -4,6 +4,7 @@ import { CompetitorService } from './competitor-service.js';
 import { RoadmapGenerator } from './generator.js';
 import { RoadmapStorage } from './storage.js';
 import { createRoadmapTools, createRoadmapToolHandler } from './tools.js';
+import { normalizeWorkspacePath, getActiveWorkspace } from '../workspace.js';
 
 export class RoadmapModule implements PluginModule {
   public readonly id = 'roadmap';
@@ -88,21 +89,22 @@ export class RoadmapModule implements PluginModule {
     };
 
     try {
-      const wsPath = url.searchParams.get('workspace') || process.cwd();
+      const wsParam = url.searchParams.get('workspace') || url.searchParams.get('workspacePath');
+      const wsPath = normalizeWorkspacePath(wsParam || getActiveWorkspace());
 
       // GET /api/roadmap
       if (pathname === '/api/roadmap' && method === 'GET') {
         const roadmap = await this.storage.getRoadmap(wsPath);
         const discovery = await this.storage.getDiscovery(wsPath);
         const competitors = await this.storage.getCompetitorAnalysis(wsPath);
-        sendJson(200, { roadmap, discovery, competitors });
+        sendJson(200, { roadmap, discovery, competitors, workspace: wsPath });
         return true;
       }
 
       // POST /api/roadmap/discovery
       if (pathname === '/api/roadmap/discovery' && method === 'POST') {
         const body = await parseBody();
-        const targetPath = body.workspacePath || wsPath;
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
         const discovery = await this.analyzer.analyzeWorkspace(targetPath);
         await this.storage.saveDiscovery(discovery, targetPath);
         sendJson(200, discovery);
@@ -112,7 +114,7 @@ export class RoadmapModule implements PluginModule {
       // POST /api/roadmap/competitors
       if (pathname === '/api/roadmap/competitors' && method === 'POST') {
         const body = await parseBody();
-        const targetPath = body.workspacePath || wsPath;
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
         let discovery = await this.storage.getDiscovery(targetPath);
         if (!discovery) {
           discovery = await this.analyzer.analyzeWorkspace(targetPath);
@@ -127,7 +129,7 @@ export class RoadmapModule implements PluginModule {
       // POST /api/roadmap/generate
       if (pathname === '/api/roadmap/generate' && method === 'POST') {
         const body = await parseBody();
-        const targetPath = body.workspacePath || wsPath;
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
         let discovery = await this.storage.getDiscovery(targetPath);
         if (!discovery) {
           discovery = await this.analyzer.analyzeWorkspace(targetPath);
@@ -147,7 +149,7 @@ export class RoadmapModule implements PluginModule {
       // POST /api/roadmap/feature/status
       if (pathname === '/api/roadmap/feature/status' && method === 'POST') {
         const body = await parseBody();
-        const targetPath = body.workspacePath || wsPath;
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
         const updatedRoadmap = await this.storage.updateFeatureStatus(body.featureId, body.status, targetPath);
         sendJson(200, updatedRoadmap);
         return true;
@@ -156,7 +158,7 @@ export class RoadmapModule implements PluginModule {
       // POST /api/roadmap/export
       if (pathname === '/api/roadmap/export' && method === 'POST') {
         const body = await parseBody();
-        const targetPath = body.workspacePath || wsPath;
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
         const roadmap = await this.storage.getRoadmap(targetPath);
         if (!roadmap) {
           sendJson(404, { error: 'No roadmap exists to export' });

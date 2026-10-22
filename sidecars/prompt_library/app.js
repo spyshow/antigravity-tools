@@ -9,6 +9,10 @@ let searchQuery = '';
 let activePromptForPaste = null;
 let currentPasteValues = {};
 
+// Active Workspace State
+let currentWorkspace = '';
+let currentWorkspaceName = '';
+
 // DOM Elements
 const promptsGrid = document.getElementById('prompts-grid');
 const emptyState = document.getElementById('empty-state');
@@ -25,15 +29,108 @@ const toastMessage = document.getElementById('toast-message');
 const pasteModal = document.getElementById('paste-modal');
 const editModal = document.getElementById('edit-modal');
 const importModal = document.getElementById('import-modal');
+const workspaceModal = document.getElementById('workspace-modal');
+
+// Workspace Helper Functions
+function extractWorkspaceFromUri(uri) {
+  if (!uri) return '';
+  let s = decodeURIComponent(String(uri).trim());
+  if (s.startsWith('file:///')) s = s.slice(8);
+  else if (s.startsWith('file://')) s = s.slice(7);
+  if (/^\/?[a-zA-Z]:[\\\/]/.test(s)) {
+    if (s.startsWith('/')) s = s.slice(1);
+    s = s.replace(/\//g, '\\');
+  }
+  return s;
+}
+
+function updateWorkspaceUI() {
+  const globalWsName = document.getElementById('global-ws-name');
+  const globalWsPath = document.getElementById('global-ws-path');
+  const roadmapWsPath = document.getElementById('roadmap-ws-path');
+  const ideationWsPath = document.getElementById('ideation-ws-path');
+  const agencyWsPath = document.getElementById('agency-ws-path');
+
+  const displayName = currentWorkspaceName || (currentWorkspace ? currentWorkspace.split(/[\\/]/).pop() : 'Default Workspace');
+  const displayPath = currentWorkspace || 'Auto-detected';
+
+  if (globalWsName) globalWsName.textContent = displayName;
+  if (globalWsPath) {
+    globalWsPath.textContent = displayPath;
+    globalWsPath.title = displayPath;
+  }
+  if (roadmapWsPath) roadmapWsPath.textContent = displayPath;
+  if (ideationWsPath) ideationWsPath.textContent = displayPath;
+  if (agencyWsPath) agencyWsPath.textContent = displayPath;
+}
+
+async function setWorkspace(newWs, forceReload = false) {
+  const normalized = extractWorkspaceFromUri(newWs);
+  if (!normalized && !forceReload) return;
+
+  const hasChanged = normalized !== currentWorkspace;
+  if (hasChanged || forceReload) {
+    currentWorkspace = normalized;
+    currentWorkspaceName = normalized ? normalized.split(/[\\/]/).pop() : '';
+
+    try {
+      const res = await fetch('/api/workspace', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspace: currentWorkspace })
+      });
+      const data = await res.json();
+      if (data && data.workspace) {
+        currentWorkspace = data.workspace;
+        currentWorkspaceName = data.name || data.workspace.split(/[\\/]/).pop();
+      }
+    } catch {}
+
+    updateWorkspaceUI();
+    reloadActiveTab();
+  }
+}
+
+function reloadActiveTab() {
+  const tabRoadmap = document.getElementById('tab-btn-roadmap');
+  const tabIdeation = document.getElementById('tab-btn-ideation');
+  const tabAgency = document.getElementById('tab-btn-agency');
+
+  if (tabRoadmap && tabRoadmap.classList.contains('active') && typeof loadRoadmapData === 'function') {
+    loadRoadmapData();
+  } else if (tabIdeation && tabIdeation.classList.contains('active') && typeof loadIdeationData === 'function') {
+    loadIdeationData();
+  } else if (tabAgency && tabAgency.classList.contains('active') && typeof loadAgencyData === 'function') {
+    loadAgencyData();
+  }
+}
 
 // API Functions
 async function api(path, options = {}) {
   try {
-    const res = await fetch(path, {
-      ...options,
+    let fullPath = path;
+    if (currentWorkspace && !fullPath.includes('workspace=')) {
+      const sep = fullPath.includes('?') ? '&' : '?';
+      fullPath = `${fullPath}${sep}workspace=${encodeURIComponent(currentWorkspace)}`;
+    }
+
+    let finalOptions = { ...options };
+    if (finalOptions.body && typeof finalOptions.body === 'string') {
+      try {
+        const parsed = JSON.parse(finalOptions.body);
+        if (!parsed.workspacePath && !parsed.workspace && currentWorkspace) {
+          parsed.workspacePath = currentWorkspace;
+          parsed.workspace = currentWorkspace;
+          finalOptions.body = JSON.stringify(parsed);
+        }
+      } catch {}
+    }
+
+    const res = await fetch(fullPath, {
+      ...finalOptions,
       headers: {
         'Content-Type': 'application/json',
-        ...(options.headers || {})
+        ...(finalOptions.headers || {})
       }
     });
     return await res.json();
@@ -320,9 +417,118 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+async function initWorkspaceDetection(interactive = false) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const convId = urlParams.get('conversationId') || '';
+  const wsParam = urlParams.get('workspace') || '';
+
+  if (wsParam) {
+    await setWorkspace(wsParam);
+    if (interactive) showToast(`Synced project: ${currentWorkspaceName}`, 'success');
+    return;
+  }
+
+  if (window.sidecar && typeof window.sidecar.getWorkspaceUris === 'function') {
+    try {
+      const uris = await window.sidecar.getWorkspaceUris();
+      if (uris && uris.length > 0) {
+        await setWorkspace(uris[0]);
+        if (interactive) showToast(`Synced project: ${currentWorkspaceName}`, 'success');
+        return;
+      }
+    } catch (e) {
+      console.warn('getWorkspaceUris error:', e);
+    }
+  }
+
+  try {
+    const q = convId ? `?conversationId=${encodeURIComponent(convId)}` : '';
+    const res = await fetch(`/api/workspace${q}`);
+    const data = await res.json();
+    if (data && data.workspace) {
+      await setWorkspace(data.workspace);
+      if (interactive) showToast(`Synced project: ${currentWorkspaceName}`, 'success');
+      return;
+    }
+  } catch (e) {
+    console.warn('fetch /api/workspace error:', e);
+  }
+
+  if (interactive) {
+    showToast(`Current project: ${currentWorkspaceName || 'Default'}`, 'info');
+  }
+}
+
 // Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await initWorkspaceDetection();
   loadData();
+
+  // Listen to workspace-change events from host IDE
+  if (window.sidecar && typeof window.sidecar.onWorkspaceChange === 'function') {
+    window.sidecar.onWorkspaceChange((uris) => {
+      if (uris && uris.length > 0) {
+        setWorkspace(uris[0], true);
+      }
+    });
+  }
+
+  window.addEventListener('message', (event) => {
+    if (event.data?.type === 'workspace-change') {
+      const uris = event.data.payload?.workspaceUris || [];
+      if (uris && uris.length > 0) {
+        setWorkspace(uris[0], true);
+      }
+    }
+  });
+
+  // Workspace Switcher UI Handlers
+  const btnDetectWs = document.getElementById('btn-detect-ws');
+  const btnSwitchWs = document.getElementById('btn-switch-ws');
+  const inputWorkspacePath = document.getElementById('input-workspace-path');
+  const btnConfirmSwitchWs = document.getElementById('btn-confirm-switch-ws');
+  const wsModalClose = document.getElementById('workspace-modal-close');
+  const wsModalCancel = document.getElementById('workspace-modal-cancel');
+
+  if (btnDetectWs) {
+    btnDetectWs.addEventListener('click', () => initWorkspaceDetection(true));
+  }
+
+  if (btnSwitchWs) {
+    btnSwitchWs.addEventListener('click', () => {
+      if (inputWorkspacePath) {
+        inputWorkspacePath.value = currentWorkspace;
+      }
+      if (workspaceModal) {
+        workspaceModal.classList.remove('hidden');
+      }
+    });
+  }
+
+  if (wsModalClose) {
+    wsModalClose.addEventListener('click', () => {
+      if (workspaceModal) workspaceModal.classList.add('hidden');
+    });
+  }
+
+  if (wsModalCancel) {
+    wsModalCancel.addEventListener('click', () => {
+      if (workspaceModal) workspaceModal.classList.add('hidden');
+    });
+  }
+
+  if (btnConfirmSwitchWs) {
+    btnConfirmSwitchWs.addEventListener('click', async () => {
+      const val = (inputWorkspacePath?.value || '').trim();
+      if (!val) {
+        showToast('Please enter a valid project directory path', 'error');
+        return;
+      }
+      await setWorkspace(val, true);
+      if (workspaceModal) workspaceModal.classList.add('hidden');
+      showToast(`Switched active project to: ${currentWorkspaceName}`, 'success');
+    });
+  }
 
   // Search
   searchInput.addEventListener('input', (e) => {

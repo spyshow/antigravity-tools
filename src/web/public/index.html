@@ -88,6 +88,31 @@
       </div>
     </header>
 
+    <!-- Global Active Workspace Bar -->
+    <div class="workspace-banner" id="workspace-banner">
+      <div class="workspace-info">
+        <span class="workspace-badge">📁 Project</span>
+        <span class="workspace-current-name" id="global-ws-name">Detecting...</span>
+        <span class="workspace-current-path" id="global-ws-path" title="Active Project Directory">...</span>
+      </div>
+      <div class="workspace-actions">
+        <button id="btn-detect-ws" class="btn btn-sm btn-secondary" title="Re-detect active project from Antigravity">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Sync Project
+        </button>
+        <button id="btn-switch-ws" class="btn btn-sm btn-secondary" title="Change target workspace folder">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Change Folder
+        </button>
+      </div>
+    </div>
+
     <!-- VIEW 1: PROMPT LIBRARY -->
     <section id="view-prompts" class="view-panel">
       <!-- Controls Bar -->
@@ -495,6 +520,32 @@
       <div class="modal-footer">
         <button class="btn btn-secondary" id="import-modal-cancel">Cancel</button>
         <button class="btn btn-primary" id="btn-confirm-import">Import Prompts</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Workspace Switcher Modal -->
+  <div class="modal-overlay hidden" id="workspace-modal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Switch Active Project</h2>
+          <p class="modal-subtitle">Point Antigravity Tools to any project folder on your machine.</p>
+        </div>
+        <button class="modal-close" id="workspace-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-workspace-path">Target Project Folder Path *</label>
+          <input type="text" id="input-workspace-path" placeholder="e.g. D:\BackUp\programing_projects\ProCal" style="width: 100%; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+        </div>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 8px;">
+          Roadmaps, Ideations, and Agency integration files will be analyzed and saved in this directory.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="workspace-modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-confirm-switch-ws">Set Active Project</button>
       </div>
     </div>
   </div>

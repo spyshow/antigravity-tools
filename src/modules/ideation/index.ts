@@ -2,6 +2,7 @@ import { PluginModule, MCPToolDefinition, MCPToolResult } from '../../types.js';
 import { IdeationService } from './service.js';
 import { IdeationStorage } from './storage.js';
 import { createIdeationTools, createIdeationToolHandler } from './tools.js';
+import { normalizeWorkspacePath, getActiveWorkspace } from '../workspace.js';
 
 export class IdeationModule implements PluginModule {
   public readonly id = 'ideation';
@@ -71,19 +72,20 @@ export class IdeationModule implements PluginModule {
     };
 
     try {
-      const wsPath = url.searchParams.get('workspace') || process.cwd();
+      const wsParam = url.searchParams.get('workspace') || url.searchParams.get('workspacePath');
+      const wsPath = normalizeWorkspacePath(wsParam || getActiveWorkspace());
 
       // GET /api/ideation
       if (pathname === '/api/ideation' && method === 'GET') {
         const report = await this.storage.getReport(wsPath);
-        sendJson(200, { report });
+        sendJson(200, { report, workspace: wsPath });
         return true;
       }
 
       // POST /api/ideation/analyze
       if (pathname === '/api/ideation/analyze' && method === 'POST') {
         const body = await parseBody();
-        const targetPath = body.workspacePath || wsPath;
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
         const report = await this.service.generateReport(targetPath);
         await this.storage.saveReport(report, targetPath);
         sendJson(200, report);
@@ -93,7 +95,7 @@ export class IdeationModule implements PluginModule {
       // POST /api/ideation/promote
       if (pathname === '/api/ideation/promote' && method === 'POST') {
         const body = await parseBody();
-        const targetPath = body.workspacePath || wsPath;
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
         const result = await this.storage.promoteIdeaToRoadmap(body.ideaId, targetPath);
         sendJson(200, result);
         return true;
@@ -102,7 +104,7 @@ export class IdeationModule implements PluginModule {
       // POST /api/ideation/export
       if (pathname === '/api/ideation/export' && method === 'POST') {
         const body = await parseBody();
-        const targetPath = body.workspacePath || wsPath;
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
         let report = await this.storage.getReport(targetPath);
         if (!report) {
           report = await this.service.generateReport(targetPath);

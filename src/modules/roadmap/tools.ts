@@ -3,6 +3,7 @@ import { ProjectAnalyzer } from './project-analyzer.js';
 import { CompetitorService } from './competitor-service.js';
 import { RoadmapGenerator } from './generator.js';
 import { RoadmapStorage } from './storage.js';
+import { normalizeWorkspacePath, getActiveWorkspace } from '../workspace.js';
 
 export function createRoadmapTools(): MCPToolDefinition[] {
   return [
@@ -109,7 +110,7 @@ export function createRoadmapToolHandler(
 ) {
   return async (name: string, args: Record<string, any>): Promise<MCPToolResult> => {
     try {
-      const wsPath = args.workspacePath ? String(args.workspacePath) : process.cwd();
+      const wsPath = normalizeWorkspacePath(args.workspacePath || getActiveWorkspace());
 
       switch (name) {
         case 'roadmap_analyze_project': {

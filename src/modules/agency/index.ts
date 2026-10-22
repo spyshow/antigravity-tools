@@ -1,6 +1,7 @@
 import { PluginModule, MCPToolDefinition, MCPToolResult } from '../../types.js';
 import { AgencyService } from './service.js';
 import { createAgencyTools, createAgencyToolHandler } from './tools.js';
+import { normalizeWorkspacePath, getActiveWorkspace } from '../workspace.js';
 
 export class AgencyModule implements PluginModule {
   public readonly id = 'agency';
@@ -72,26 +73,27 @@ export class AgencyModule implements PluginModule {
     };
 
     try {
-      const wsPath = url.searchParams.get('workspace') || process.cwd();
+      const wsParam = url.searchParams.get('workspace') || url.searchParams.get('workspacePath');
+      const wsPath = normalizeWorkspacePath(wsParam || getActiveWorkspace());
 
       // GET /api/agency/status
       if (pathname === '/api/agency/status' && method === 'GET') {
         const status = this.service.getStatus(wsPath);
-        sendJson(200, status);
+        sendJson(200, { ...status, workspace: wsPath });
         return true;
       }
 
       // GET /api/agency/agents
       if (pathname === '/api/agency/agents' && method === 'GET') {
         const agents = this.service.listAgents(wsPath);
-        sendJson(200, { count: agents.length, agents });
+        sendJson(200, { count: agents.length, agents, workspace: wsPath });
         return true;
       }
 
       // POST /api/agency/integrate
       if (pathname === '/api/agency/integrate' && method === 'POST') {
         const body = await parseBody();
-        const targetPath = body.workspacePath || wsPath;
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
         const result = await this.service.integrate(targetPath);
         sendJson(200, result);
         return true;
