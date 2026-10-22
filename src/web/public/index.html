@@ -23,7 +23,7 @@
         </div>
         <div>
           <h1 class="header-title">Antigravity Tools</h1>
-          <p class="header-subtitle">Prompts &bull; AI Strategic Roadmap &bull; Codebase Ideation</p>
+          <p class="header-subtitle">Prompts &bull; AI Strategic Roadmap &bull; Ideation &bull; Agency Agents</p>
         </div>
       </div>
 
@@ -51,6 +51,13 @@
             <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
           </svg>
           💡 Ideation & Audits
+        </button>
+        <button class="nav-tab" id="tab-btn-agency">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          🤖 Agency Agents
         </button>
       </nav>
 
@@ -279,6 +286,98 @@
 
       <!-- Ideation Cards Grid -->
       <div class="ideation-cards-container" id="ideation-cards-container">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- VIEW 4: AGENCY AGENTS INTEGRATION -->
+    <section id="view-agency" class="view-panel hidden">
+      <!-- Agency Toolbar -->
+      <div class="roadmap-toolbar">
+        <div class="roadmap-ws-info">
+          <span class="badge badge-success">Agency Ecosystem</span>
+          <span id="agency-ws-path" class="roadmap-path">msitarzewski/agency-agents-app</span>
+        </div>
+        <div class="roadmap-actions">
+          <button id="btn-integrate-agency" class="btn btn-primary" title="Generate docs/agency-registry.md, /agency-pipeline, and inter-agent calling rules">
+            ⚡ Integrate Agency Agents
+          </button>
+          <button id="btn-refresh-agency" class="btn btn-secondary" title="Re-scan installed agency skills">
+            🔄 Re-Scan Agents
+          </button>
+        </div>
+      </div>
+
+      <!-- Agency Metrics Grid -->
+      <div class="health-scores-grid">
+        <div class="health-score-card">
+          <div class="health-score-header">
+            <span class="health-icon">🤖</span>
+            <span class="health-title">Installed Agents</span>
+          </div>
+          <div class="health-score-val score-good" id="agency-count-val">0</div>
+          <div class="health-score-desc">Detected via Windows App / Skills</div>
+        </div>
+
+        <div class="health-score-card">
+          <div class="health-score-header">
+            <span class="health-icon">📋</span>
+            <span class="health-title">Integration Status</span>
+          </div>
+          <div class="health-score-val" id="agency-status-val">--</div>
+          <div class="health-score-desc" id="agency-status-desc">Click Integrate to bootstrap</div>
+        </div>
+
+        <div class="health-score-card">
+          <div class="health-score-header">
+            <span class="health-icon">🔀</span>
+            <span class="health-title">Router Command</span>
+          </div>
+          <div class="health-score-val" style="font-size: 1.5rem; color: #60a5fa;">/agency-pipeline</div>
+          <div class="health-score-desc">.agents/workflows/agency-pipeline.md</div>
+        </div>
+
+        <div class="health-score-card">
+          <div class="health-score-header">
+            <span class="health-icon">🔄</span>
+            <span class="health-title">Handoff Protocol</span>
+          </div>
+          <div class="health-score-val" style="font-size: 1.5rem; color: #c084fc;">[CALL_AGENT]</div>
+          <div class="health-score-desc">.agents/rules/inter-agent-calling.md</div>
+        </div>
+      </div>
+
+      <!-- Generated Files Checklist Banner -->
+      <div class="agency-files-banner" id="agency-files-status">
+        <div class="agency-file-pill" id="file-check-registry"><span>⚪</span> docs/agency-registry.md</div>
+        <div class="agency-file-pill" id="file-check-pipeline"><span>⚪</span> .agents/workflows/agency-pipeline.md</div>
+        <div class="agency-file-pill" id="file-check-rule"><span>⚪</span> .agents/rules/inter-agent-calling.md</div>
+        <div class="agency-file-pill" id="file-check-readme"><span>⚪</span> agency-readme.md</div>
+      </div>
+
+      <!-- Quick Action Prompt Shortcuts -->
+      <div class="agency-prompts-row">
+        <span class="agency-prompts-label">⚡ 1-Click Agency Prompts:</span>
+        <button class="btn btn-secondary btn-agency-quick-prompt" data-template-key="new-project">🚀 New Project (Orchestrator)</button>
+        <button class="btn btn-secondary btn-agency-quick-prompt" data-template-key="new-feature">✨ Add Feature (Pipeline)</button>
+        <button class="btn btn-secondary btn-agency-quick-prompt" data-template-key="deep-research">🔬 Deep Research (No Code)</button>
+        <button class="btn btn-secondary btn-agency-quick-prompt" data-template-key="reality-check">🛡️ Reality Check (QA Gate)</button>
+      </div>
+
+      <!-- Searchable Agents Directory -->
+      <div class="controls-bar" style="margin-top: 20px;">
+        <div class="search-wrapper">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="agency-search-input" placeholder="Search 280+ Agency specialists by name, role, or keyword..." autocomplete="off">
+        </div>
+        <div class="roadmap-meta-info" id="agency-agents-counter">Loading agents...</div>
+      </div>
+
+      <!-- Agents Directory Grid -->
+      <div class="agency-directory-grid" id="agency-directory-grid">
         <!-- Rendered via JS -->
       </div>
     </section>

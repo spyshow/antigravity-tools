@@ -519,24 +519,28 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================================================================
-  // TAB NAVIGATION & ROADMAP / IDEATION INITIALIZATION
+  // TAB NAVIGATION & MODULE INITIALIZATION
   // ==========================================================================
   const tabPrompts = document.getElementById('tab-btn-prompts');
   const tabRoadmap = document.getElementById('tab-btn-roadmap');
   const tabIdeation = document.getElementById('tab-btn-ideation');
+  const tabAgency = document.getElementById('tab-btn-agency');
   const viewPrompts = document.getElementById('view-prompts');
   const viewRoadmap = document.getElementById('view-roadmap');
   const viewIdeation = document.getElementById('view-ideation');
+  const viewAgency = document.getElementById('view-agency');
   const promptHeaderActions = document.getElementById('prompt-header-actions');
 
   function switchTab(target) {
     tabPrompts.classList.toggle('active', target === 'prompts');
     tabRoadmap.classList.toggle('active', target === 'roadmap');
     tabIdeation.classList.toggle('active', target === 'ideation');
+    if (tabAgency) tabAgency.classList.toggle('active', target === 'agency');
 
     viewPrompts.classList.toggle('hidden', target !== 'prompts');
     viewRoadmap.classList.toggle('hidden', target !== 'roadmap');
     viewIdeation.classList.toggle('hidden', target !== 'ideation');
+    if (viewAgency) viewAgency.classList.toggle('hidden', target !== 'agency');
 
     promptHeaderActions.classList.toggle('hidden', target !== 'prompts');
 
@@ -544,12 +548,15 @@ document.addEventListener('DOMContentLoaded', () => {
       loadRoadmapData();
     } else if (target === 'ideation') {
       loadIdeationData();
+    } else if (target === 'agency') {
+      loadAgencyData();
     }
   }
 
   tabPrompts.addEventListener('click', () => switchTab('prompts'));
   tabRoadmap.addEventListener('click', () => switchTab('roadmap'));
   tabIdeation.addEventListener('click', () => switchTab('ideation'));
+  if (tabAgency) tabAgency.addEventListener('click', () => switchTab('agency'));
 
   // ==========================================================================
   // ROADMAP LOGIC & EVENT HANDLERS
@@ -1214,5 +1221,223 @@ Inspect the referenced files, implement the recommended solution adhering to pro
     } catch (err) {
       showToast(`Export failed: ${err.message}`, 'error');
     }
+  });
+
+  // ==========================================================================
+  // AGENCY AGENTS INTEGRATION LOGIC
+  // ==========================================================================
+  let agencyData = null;
+  let agencyAgents = [];
+  let agencySearchQuery = '';
+
+  const agencyCountVal = document.getElementById('agency-count-val');
+  const agencyStatusVal = document.getElementById('agency-status-val');
+  const agencyStatusDesc = document.getElementById('agency-status-desc');
+  const agencyAgentsCounter = document.getElementById('agency-agents-counter');
+  const agencyDirectoryGrid = document.getElementById('agency-directory-grid');
+  const agencySearchInput = document.getElementById('agency-search-input');
+  const btnIntegrateAgency = document.getElementById('btn-integrate-agency');
+  const btnRefreshAgency = document.getElementById('btn-refresh-agency');
+
+  const fileCheckRegistry = document.getElementById('file-check-registry');
+  const fileCheckPipeline = document.getElementById('file-check-pipeline');
+  const fileCheckRule = document.getElementById('file-check-rule');
+  const fileCheckReadme = document.getElementById('file-check-readme');
+
+  async function loadAgencyData() {
+    try {
+      const statusRes = await api('/api/agency/status');
+      if (statusRes && statusRes.status) {
+        agencyData = statusRes.status;
+        renderAgencyStatus(agencyData);
+      }
+
+      const agentsRes = await api('/api/agency/agents');
+      if (agentsRes && agentsRes.agents) {
+        agencyAgents = agentsRes.agents;
+        renderAgencyDirectory();
+      }
+    } catch (err) {
+      console.warn('Error loading agency data:', err);
+    }
+  }
+
+  function renderAgencyStatus(status) {
+    if (!status) return;
+
+    if (agencyCountVal) {
+      agencyCountVal.textContent = status.installedAgentsCount || 0;
+    }
+
+    if (agencyStatusVal) {
+      if (status.integrated) {
+        agencyStatusVal.textContent = 'Integrated';
+        agencyStatusVal.className = 'health-score-val score-good';
+      } else {
+        agencyStatusVal.textContent = 'Pending';
+        agencyStatusVal.className = 'health-score-val text-warning';
+      }
+    }
+
+    if (agencyStatusDesc) {
+      agencyStatusDesc.textContent = status.integrated
+        ? 'Ready for multi-agent workflows'
+        : 'Click Integrate to bootstrap';
+    }
+
+    // Update file pills
+    updateFilePill(fileCheckRegistry, status.hasRegistry, 'docs/agency-registry.md');
+    updateFilePill(fileCheckPipeline, status.hasPipelineWorkflow, '.agents/workflows/agency-pipeline.md');
+    updateFilePill(fileCheckRule, status.hasCallingRule, '.agents/rules/inter-agent-calling.md');
+    updateFilePill(fileCheckReadme, status.hasGuide, 'agency-readme.md');
+  }
+
+  function updateFilePill(el, exists, label) {
+    if (!el) return;
+    el.className = `agency-file-pill ${exists ? 'present' : 'missing'}`;
+    el.innerHTML = `<span>${exists ? '✅' : '⚪'}</span> ${label}`;
+  }
+
+  function renderAgencyDirectory() {
+    if (!agencyDirectoryGrid) return;
+
+    const q = (agencySearchQuery || '').trim().toLowerCase();
+    const filtered = agencyAgents.filter(a => {
+      if (!q) return true;
+      return (a.id && a.id.toLowerCase().includes(q)) ||
+             (a.name && a.name.toLowerCase().includes(q)) ||
+             (a.description && a.description.toLowerCase().includes(q));
+    });
+
+    if (agencyAgentsCounter) {
+      agencyAgentsCounter.textContent = `Showing ${filtered.length} of ${agencyAgents.length} agents`;
+    }
+
+    if (filtered.length === 0) {
+      agencyDirectoryGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
+          <p style="font-size: 1.1rem; margin-bottom: 8px;">No matching agency specialists found</p>
+          <small>Try a different keyword or click "Re-Scan Agents" if you recently installed more in the Agency App.</small>
+        </div>
+      `;
+      return;
+    }
+
+    agencyDirectoryGrid.innerHTML = filtered.map(a => {
+      const displayId = a.id || a.name;
+      const cleanDesc = escapeHtml(a.description || 'Specialized AI workflow agent');
+      return `
+        <div class="agency-agent-card">
+          <div class="agency-agent-top">
+            <span class="agency-agent-name">${escapeHtml(displayId)}</span>
+            <span class="badge badge-accent">Agent</span>
+          </div>
+          <p class="agency-agent-desc" title="${cleanDesc}">${cleanDesc}</p>
+          <div class="agency-agent-footer">
+            <button class="agency-btn-copy-name" data-copy-name="${escapeHtml(displayId)}" title="Copy agent identifier">
+              📋 Copy ID
+            </button>
+            <button class="agency-btn-use-agent" data-call-agent="${escapeHtml(displayId)}" title="Copy handoff delegation block">
+              ✨ Call Agent
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Attach listener for Copy ID
+    agencyDirectoryGrid.querySelectorAll('.agency-btn-copy-name').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-copy-name');
+        try {
+          await navigator.clipboard.writeText(id);
+          showToast(`📋 Copied agent name: ${id}`);
+        } catch {
+          showToast('Failed to copy', 'error');
+        }
+      });
+    });
+
+    // Attach listener for Call Agent
+    agencyDirectoryGrid.querySelectorAll('.agency-btn-use-agent').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-call-agent');
+        const delegationSnippet = `[CALL_AGENT: ${id}]\nContext: <Brief explanation of what has been accomplished so far>\nTask: <Clear, actionable instructions for this specialist>\nConstraints: <Any requirements, tech constraints, or guidelines>`;
+        try {
+          await navigator.clipboard.writeText(delegationSnippet);
+          showToast(`✨ Copied [CALL_AGENT: ${id}] delegation snippet!`);
+        } catch {
+          showToast('Failed to copy snippet', 'error');
+        }
+      });
+    });
+  }
+
+  async function runAgencyIntegration() {
+    if (btnIntegrateAgency) {
+      btnIntegrateAgency.disabled = true;
+      btnIntegrateAgency.textContent = '⏳ Integrating...';
+    }
+    showToast('⚡ Integrating Agency Agents...', 'info');
+
+    try {
+      const res = await api('/api/agency/integrate', { method: 'POST' });
+      if (res.success) {
+        showToast(`✅ Integrated ${res.result.detectedAgents} Agency Agents! Generated registry & pipeline.`, 'success');
+        await loadAgencyData();
+        await loadData(); // Reload prompts so new Agency prompts show in Prompt Library
+      } else {
+        showToast(res.error || 'Integration failed', 'error');
+      }
+    } catch (err) {
+      showToast(`Integration error: ${err.message}`, 'error');
+    } finally {
+      if (btnIntegrateAgency) {
+        btnIntegrateAgency.disabled = false;
+        btnIntegrateAgency.textContent = '⚡ Integrate Agency Agents';
+      }
+    }
+  }
+
+  // Search input
+  if (agencySearchInput) {
+    agencySearchInput.addEventListener('input', (e) => {
+      agencySearchQuery = e.target.value;
+      renderAgencyDirectory();
+    });
+  }
+
+  // Integrate & Refresh Buttons
+  if (btnIntegrateAgency) {
+    btnIntegrateAgency.addEventListener('click', runAgencyIntegration);
+  }
+  if (btnRefreshAgency) {
+    btnRefreshAgency.addEventListener('click', async () => {
+      showToast('🔄 Re-scanning installed Agency agents...', 'info');
+      await loadAgencyData();
+      showToast('Scanned agency directory.');
+    });
+  }
+
+  // 1-Click Agency Quick Prompts
+  document.querySelectorAll('.btn-agency-quick-prompt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.getAttribute('data-template-key');
+      const promptIdMap = {
+        'new-project': 'agency-orchestrator-new-project',
+        'new-feature': 'agency-feature-pipeline',
+        'deep-research': 'agency-deep-research',
+        'reality-check': 'agency-reality-check'
+      };
+      const targetId = promptIdMap[key];
+      const found = prompts.find(p => p.id === targetId);
+
+      if (found) {
+        openPasteModal(found);
+      } else {
+        // Switch to Prompts tab or run integration
+        showToast('Please click "⚡ Integrate Agency Agents" first to load these prompts into your library.', 'info');
+      }
+    });
   });
 });

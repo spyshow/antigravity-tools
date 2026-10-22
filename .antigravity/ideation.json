@@ -29,7 +29,7 @@
       ],
       "implementation_approach": "Create a FormatParser strategy pattern that detects YAML/CSV headers, transforms records to PromptItem, and calls existing importPrompts().",
       "status": "draft",
-      "created_at": "2026-10-22T08:09:24.284Z"
+      "created_at": "2026-10-22T08:27:15.081Z"
     },
     {
       "id": "ci-002",
@@ -52,7 +52,7 @@
       ],
       "implementation_approach": "Expose a roadmap_execute_feature tool that packages the user story & acceptance criteria into an agent subtask with automated verification.",
       "status": "draft",
-      "created_at": "2026-10-22T08:09:24.284Z"
+      "created_at": "2026-10-22T08:27:15.081Z"
     },
     {
       "id": "ci-003",
@@ -75,7 +75,7 @@
       ],
       "implementation_approach": "Add exportToCSV() and exportToLinear() methods on RoadmapGenerator mapping Phase -> Milestone and Feature -> Issue.",
       "status": "draft",
-      "created_at": "2026-10-22T08:09:24.284Z"
+      "created_at": "2026-10-22T08:27:15.081Z"
     },
     {
       "id": "ci-004",
@@ -98,7 +98,7 @@
       ],
       "implementation_approach": "Attach a WebSocket listener to the HTTP server instance and broadcast \"roadmap:updated\" and \"prompt:pasted\" events to connected sidecar panes.",
       "status": "draft",
-      "created_at": "2026-10-22T08:09:24.284Z"
+      "created_at": "2026-10-22T08:27:15.081Z"
     }
   ],
   "performanceOptimizations": [
@@ -113,8 +113,8 @@
       "affectedAreas": [
         ".antigravity/ideation.json",
         "IDEATION.md",
-        "src/modules/ideation/code-scanner.ts",
-        "src/modules/ideation/service.ts"
+        "src/modules/agency/detector.ts",
+        "src/modules/agency/service.ts"
       ],
       "currentMetric": "Synchronous fs calls execute on the main event thread",
       "expectedImprovement": "Eliminates event loop delays, providing < 5ms response times under concurrent agent requests",
@@ -306,9 +306,9 @@
     }
   ],
   "metadata": {
-    "filesScanned": 53,
-    "linesOfCodeEstimated": 10509,
-    "generatedAt": "2026-10-22T08:09:24.284Z",
+    "filesScanned": 66,
+    "linesOfCodeEstimated": 16478,
+    "generatedAt": "2026-10-22T08:27:15.081Z",
     "scannedPaths": [
       "src/",
       "sidecars/",

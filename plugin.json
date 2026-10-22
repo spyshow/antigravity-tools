@@ -2,6 +2,6 @@
   "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "antigravity-tools",
   "displayName": "Antigravity Tools",
-  "description": "Developer productivity suite featuring Prompt Library, AI Strategic Roadmap with competitor analysis, and Codebase Ideation with performance & security audits.",
-  "version": "1.3.0"
+  "description": "Developer productivity suite featuring Prompt Library, AI Strategic Roadmap with competitor analysis, Codebase Ideation with performance & security audits, and Agency Agents multi-agent ecosystem integration.",
+  "version": "1.4.0"
 }

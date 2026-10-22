@@ -4,7 +4,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green?style=flat-square)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3%2B-blue?style=flat-square)](https://www.typescriptlang.org/)
 [![MCP Protocol](https://img.shields.io/badge/MCP-JSON--RPC%202.0-purple?style=flat-square)](https://modelcontextprotocol.io/)
-[![Tests](https://img.shields.io/badge/Tests-18%2F18%20Passing-brightgreen?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/Tests-22%2F22%20Passing-brightgreen?style=flat-square)]()
 
 An extensible developer productivity suite for [Google Antigravity](https://antigravity.google/docs/plugins/). Built natively in TypeScript/Node.js, it provides a unified modular architecture accessible via Antigravity's **Plugins** sidecar aux pane, standard **Model Context Protocol (MCP)** tools, an interactive **Web Dashboard**, and a fast **CLI**.
 
@@ -15,6 +15,7 @@ An extensible developer productivity suite for [Google Antigravity](https://anti
   - [1. 📚 Prompt Library & Dynamic Clipboard Injection](#1--prompt-library--dynamic-clipboard-injection)
   - [2. 🗺️ AI Strategic Roadmap & Competitor Planner](#2-️-ai-strategic-roadmap--competitor-planner-aperant-model)
   - [3. 💡 Codebase Ideation, Performance & Security Audits](#3--codebase-ideation-performance--security-audits-aperant-model)
+  - [4. 🤖 Agency Agents Integration & Multi-Agent Handoff](#4--agency-agents-integration--multi-agent-handoff)
 - [Architecture & Directory Structure](#-architecture--directory-structure)
 - [Step-by-Step Installation](#-step-by-step-installation)
   - [Prerequisites](#prerequisites)
@@ -38,17 +39,17 @@ An extensible developer productivity suite for [Google Antigravity](https://anti
 Antigravity Tools consolidates essential engineering workflows into a cohesive local-first suite:
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                           ANTIGRAVITY TOOLS                            │
-├─────────────────────┬──────────────────────────┬───────────────────────┤
-│ 📚 PROMPT LIBRARY   │ 🗺️ STRATEGIC ROADMAP     │ 💡 CODEBASE IDEATION  │
-├─────────────────────┼──────────────────────────┼───────────────────────┤
-│ • Dynamic Templates │ • AST Repo Introspection │ • Code Improvements   │
-│ • {{var}} Fill Form │ • Competitor Benchmarking│ • Perf Bottlenecks    │
-│ • <50ms OS Paste    │ • MoSCoW Phasing         │ • Security (CWE/OWASP)│
-│ • JSON Import/Export│ • Linked CP Insights     │ • 0-100 Health Scores │
-│ • 8 MCP Tools       │ • Export ROADMAP.md      │ • Promote to Roadmap  │
-└─────────────────────┴──────────────────────────┴───────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   ANTIGRAVITY TOOLS                                    │
+├─────────────────────┬──────────────────────────┬───────────────────────┬───────────────┤
+│ 📚 PROMPT LIBRARY   │ 🗺️ STRATEGIC ROADMAP     │ 💡 CODEBASE IDEATION  │ 🤖 AGENCY HUB │
+├─────────────────────┼──────────────────────────┼───────────────────────┼───────────────┤
+│ • Dynamic Templates │ • AST Repo Introspection │ • Code Improvements   │ • 280+ Agents │
+│ • {{var}} Fill Form │ • Competitor Benchmarking│ • Perf Bottlenecks    │ • /pipeline   │
+│ • <50ms OS Paste    │ • MoSCoW Phasing         │ • Security (CWE/OWASP)│ • [CALL_AGENT]│
+│ • JSON Import/Export│ • Linked CP Insights     │ • 0-100 Health Scores │ • Registry MD │
+│ • 8 MCP Tools       │ • Export ROADMAP.md      │ • Promote to Roadmap  │ • Guide A-E   │
+└─────────────────────┴──────────────────────────┴───────────────────────┴───────────────┘
 ```
 
 ---
@@ -81,6 +82,18 @@ A 4-pillar static analysis and opportunity discovery engine:
 - **Direct Bridge to Roadmap**: 1-click **"Promote to Roadmap"** converts an ideation discovery into an active MoSCoW feature ticket in `roadmap.json`!
 - **1-Click Export**: Generates a comprehensive [IDEATION.md](file:///d:/BackUp/programing_projects/antigravity_tools/IDEATION.md) report in the workspace root.
 
+### 4. 🤖 Agency Agents Integration & Multi-Agent Handoff
+Enables seamless integration with the 280+ AI specialist agents installed via the [Agency Agents desktop app](https://github.com/msitarzewski/agency-agents-app):
+- **Universal Multi-Directory Scanning**: Deep-scans candidate skill directories across `%USERPROFILE%\.gemini\config\skills`, `%USERPROFILE%\.gemini\antigravity\skills`, `.agents/skills`, and `skills/`, extracting frontmatter metadata to identify all `agency-*` specialists.
+- **1-Click Native TypeScript Integration**:
+  - `docs/agency-registry.md`: Master directory table listing every installed agent slug, trigger description, and exact skill path.
+  - `.agents/workflows/agency-pipeline.md`: The universal `/agency-pipeline` multi-agent squad assembly router.
+  - `.agents/rules/inter-agent-calling.md`: The always-on `[CALL_AGENT]` delegation protocol for dynamic sub-agent consultations.
+  - `agency-readme.md`: Zero-knowledge, step-by-step user guide with complete copy-paste prompts for Scenarios A through E (Orchestrator new project, Feature pipeline, Deep research, Single specialist, Reality check QA gate).
+- **Prompt Library Injection**: Automatically injects 5 battle-tested Agency workflow prompts into your Prompt Library.
+- **Sidecar Aux Pane Dashboard**: View installed agent count, integration checklist, and live-search through all 280+ specialists with 1-click "Copy ID" and "Call Agent" delegation snippet generator.
+- **Cross-Platform Reliability**: Runs entirely in native Node.js/TypeScript—no PowerShell execution policy restrictions or platform-specific bash scripts required.
+
 ---
 
 ## 📂 Architecture & Directory Structure
@@ -95,6 +108,14 @@ antigravity_tools/
 ├── tsconfig.json               # TypeScript configuration
 ├── ROADMAP.md                  # Generated strategic product roadmap
 ├── IDEATION.md                 # Generated codebase ideation & audit report
+├── agency-readme.md            # Generated Agency Agents user guide (Scenarios A-E)
+├── docs/
+│   └── agency-registry.md      # Auto-generated master catalog of 280+ agency skills
+├── .agents/
+│   ├── workflows/
+│   │   └── agency-pipeline.md  # Multi-agent orchestrator router (/agency-pipeline)
+│   └── rules/
+│       └── inter-agent-calling.md # [CALL_AGENT] delegation rule
 ├── bin/
 │   └── agy-tools.cmd           # Windows CLI launcher
 ├── skills/                     # Antigravity agent skills
@@ -117,39 +138,28 @@ antigravity_tools/
 │   ├── modules/
 │   │   ├── registry.ts         # Dynamic plugin module registry
 │   │   ├── prompts/            # Module 1: Prompt Library
-│   │   │   ├── types.ts        # Prompt schemas & variable definitions
-│   │   │   ├── storage.ts      # Atomic JSON document storage
-│   │   │   ├── interpolator.ts # Template variable parsing & replacement
-│   │   │   ├── clipboard.ts    # Cross-platform OS clipboard writer
-│   │   │   ├── service.ts      # Business logic & filter engine
-│   │   │   ├── tools.ts        # MCP tool definitions & handlers
-│   │   │   └── index.ts        # PluginModule lifecycle & REST bridge
 │   │   ├── roadmap/            # Module 2: AI Strategic Roadmap
-│   │   │   ├── types.ts        # Discovery, competitor, & roadmap types
-│   │   │   ├── project-analyzer.ts # Repo discovery & stack scanner
-│   │   │   ├── competitor-service.ts # Competitor pain point intelligence
-│   │   │   ├── generator.ts    # MoSCoW phase synthesizer & MD exporter
-│   │   │   ├── storage.ts      # .antigravity/roadmap.json persistence
-│   │   │   ├── tools.ts        # Roadmap MCP tools
-│   │   │   └── index.ts        # REST endpoints (/api/roadmap/*)
-│   │   └── ideation/           # Module 3: Codebase Ideation & Audits
-│   │       ├── types.ts        # 4-pillar schemas & health score models
-│   │       ├── code-scanner.ts # AST scanner for patterns, risks, & debt
-│   │       ├── service.ts      # Health scores & IDEATION.md generator
-│   │       ├── storage.ts      # Storage & "Promote to Roadmap" bridge
-│   │       ├── tools.ts        # Ideation MCP tools
-│   │       └── index.ts        # REST endpoints (/api/ideation/*)
+│   │   ├── ideation/           # Module 3: Codebase Ideation & Audits
+│   │   └── agency/             # Module 4: Agency Agents Integration
+│   │       ├── types.ts        # Agency status & result interfaces
+│   │       ├── detector.ts     # Multi-directory skill & frontmatter scanner
+│   │       ├── prompts.ts      # Curated Scenarios A-E prompt templates
+│   │       ├── generator.ts    # Native TS generator for registry, pipeline, rules
+│   │       ├── service.ts      # File generation & prompt library injector
+│   │       ├── tools.ts        # Agency MCP tools (integrate, list, status)
+│   │       └── index.ts        # REST endpoints (/api/agency/*)
 │   ├── web/
 │   │   ├── server.ts           # HTTP server for Aux Pane & Web UI
 │   │   └── public/
-│   │       ├── index.html      # Tabbed interactive dashboard UI
+│   │       ├── index.html      # 4-tab interactive dashboard UI
 │   │       ├── ui.html         # Aux pane webview with /preload.js bridge
 │   │       ├── styles.css      # Dark-theme design tokens & layouts
 │   │       └── app.js          # Reactive client application logic
-│   └── tests/                  # Automated test suite (18 unit tests)
+│   └── tests/                  # Automated test suite (22 unit tests)
 │       ├── prompts.test.ts
 │       ├── roadmap.test.ts
-│       └── ideation.test.ts
+│       ├── ideation.test.ts
+│       └── agency.test.ts
 ```
 
 ---
@@ -184,7 +194,7 @@ This compiles TypeScript to `dist/` and copies `src/web/public/` to `dist/web/pu
 ---
 
 ### Step 3: Run Automated Verification Tests
-Verify that all 18 test cases across all modules pass cleanly:
+Verify that all 22 test cases across all modules pass cleanly:
 
 ```bash
 npm test
@@ -192,6 +202,10 @@ npm test
 
 Expected output:
 ```
+✔ AgencyDetector discovers installed agency skills across system directories
+✔ AgencyGenerator generates registry table, pipeline workflow, rules, and readme
+✔ AgencyService integrates files and injects prompts into prompt library
+✔ AgencyModule exposes MCP tools and handles requests
 ✔ CodeScanner scans workspace and discovers architecture patterns and security rules
 ✔ IdeationService produces 4-pillar report with health scores and markdown export
 ✔ IdeationStorage persists report and promotes ideation finding into active Roadmap
@@ -210,7 +224,7 @@ Expected output:
 ✔ PromptService pastePrompt increments usage count and renders properly
 ✔ PromptStorage initializes with default seed prompts if file does not exist
 ✔ PromptStorage saves, retrieves, and deletes custom prompt
-ℹ tests 18 | pass 18 | fail 0
+ℹ tests 22 | pass 22 | fail 0
 ```
 
 ---
@@ -284,6 +298,12 @@ Restart Antigravity or open a new session.
      - Filter discoveries by category (`Features`, `Performance`, `Security`, `Code Quality`).
      - Click **➕ Promote to Roadmap** on any idea to instantly turn it into an active feature ticket in `roadmap.json`!
      - Click **📄 Export IDEATION.md** to write the full audit report to the project root.
+   - **🤖 Agency Agents Tab**:
+     - Inspect detected Agency skills count across Windows host and workspace directories (280+ specialists).
+     - Check the real-time generated files status checklist (`docs/agency-registry.md`, `.agents/workflows/agency-pipeline.md`, `.agents/rules/inter-agent-calling.md`, `agency-readme.md`).
+     - Click **⚡ Integrate Agency Agents** to generate the phonebook registry, pipeline router, and inter-agent calling rules in under 1 second.
+     - Use **1-Click Prompt Shortcuts** (`🚀 New Project`, `✨ Add Feature`, `🔬 Deep Research`, `🛡️ Reality Check`) to immediately load dynamic multi-agent execution prompts.
+     - Search through all 280+ specialists by name, role, or description, with 1-click **"Copy ID"** or **"Call Agent"** to copy complete `[CALL_AGENT]` delegation snippets.
 
 ---
 
@@ -313,12 +333,17 @@ When working with an Antigravity pair programming agent, the agent can call all 
 | | `ideation_get` | Retrieve current ideation findings and health scores. |
 | | `ideation_promote_to_roadmap` | Promote an ideation discovery into an active roadmap ticket. |
 | | `ideation_export_markdown` | Export formatted `IDEATION.md` to workspace root. |
+| **Agency** | `agency_integrate` | 1-click integration: generates registry, pipeline, inter-agent rule, and injects prompts. |
+| | `agency_list_agents` | Lists and filters all installed Agency Agent skills with full paths and metadata. |
+| | `agency_status` | Returns integration status, file presence, and installed agent counts. |
 
 #### Example Agent Prompts
 - *"Analyze this project and generate an Aperant-style MoSCoW roadmap with competitor insights."*
 - *"Audit the repository for performance bottlenecks and security vulnerabilities, then export IDEATION.md."*
 - *"Find the senior code review prompt from my library and paste it with language=TypeScript."*
 - *"Promote security finding sec-001 to the roadmap as a Must-Have feature."*
+- *"Integrate installed Agency Agents into this project and show me the master registry."*
+- *"Run /agency-pipeline to assemble a squad for building a real-time analytics feature."*
 
 ---
 

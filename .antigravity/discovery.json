@@ -54,6 +54,7 @@
       "web module"
     ],
     "knownGaps": [
+      "s, and run the tests.",
       "comments"
     ],
     "technicalDebt": [
@@ -61,5 +62,5 @@
       "Documentation for advanced plugin customizations"
     ]
   },
-  "createdAt": "2026-10-22T08:09:24.251Z"
+  "createdAt": "2026-10-22T08:27:15.033Z"
 }
