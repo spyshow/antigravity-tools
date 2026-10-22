@@ -1,0 +1,5 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "antigravity-toolkit",
+  "description": "Modular productivity toolkit for Antigravity with prompt library management, template variable interpolation, clipboard pasting, and web dashboard."
+}

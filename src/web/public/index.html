@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity Toolkit - Prompt Library</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-badge">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h1 class="header-title">Antigravity Toolkit</h1>
+          <p class="header-subtitle">Prompt Library & Template Manager</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-export" class="btn btn-secondary" title="Export library to JSON">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export
+        </button>
+        <button id="btn-import" class="btn btn-secondary" title="Import prompts from JSON">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Import
+        </button>
+        <button id="btn-new-prompt" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          New Prompt
+        </button>
+      </div>
+    </header>
+
+    <!-- Controls Bar -->
+    <div class="controls-bar">
+      <!-- Search Input -->
+      <div class="search-wrapper">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-input" placeholder="Search prompts by title, keywords, or content... (Ctrl+K)" autocomplete="off">
+        <button id="search-clear" class="btn-clear hidden">&times;</button>
+      </div>
+
+      <!-- Quick Filter Pills -->
+      <div class="filter-pills" id="category-pills">
+        <button class="pill active" data-category="ALL">All Prompts</button>
+        <button class="pill" data-favorite="true">⭐ Favorites</button>
+        <!-- Categories injected dynamically -->
+      </div>
+    </div>
+
+    <!-- Active Filter Tags row -->
+    <div class="tags-bar hidden" id="tags-bar">
+      <span class="tags-label">Tags:</span>
+      <div class="tags-container" id="tags-container"></div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <span id="prompt-count-text">Loading prompt library...</span>
+      <span class="clipboard-tip">💡 Clicking <b>Paste</b> automatically renders variables & copies straight to your system clipboard!</span>
+    </div>
+
+    <!-- Main Prompts Grid -->
+    <main class="prompts-grid" id="prompts-grid">
+      <!-- Injected via JavaScript -->
+    </main>
+
+    <!-- Empty State -->
+    <div class="empty-state hidden" id="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <h3>No prompts found</h3>
+      <p>Try refining your search query or category filters, or create a new prompt.</p>
+      <button class="btn btn-primary" id="btn-empty-create">Create Prompt</button>
+    </div>
+  </div>
+
+  <!-- Variable Filling Modal (Paste Prompt) -->
+  <div class="modal-overlay hidden" id="paste-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="paste-modal-title">Fill Variables & Paste</h2>
+          <p class="modal-subtitle" id="paste-modal-desc">Configure template variables for this prompt before pasting.</p>
+        </div>
+        <button class="modal-close" id="paste-modal-close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="paste-layout">
+          <!-- Variables Inputs Column -->
+          <div class="variables-form" id="variables-inputs-container">
+            <!-- Dynamically generated inputs -->
+          </div>
+
+          <!-- Live Render Preview Column -->
+          <div class="preview-column">
+            <div class="preview-header">
+              <span class="preview-title">Live Preview (Ready to Paste)</span>
+              <span class="char-count" id="preview-char-count">0 characters</span>
+            </div>
+            <pre class="preview-box" id="preview-box"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="paste-modal-cancel">Cancel</button>
+        <button class="btn btn-primary btn-paste-action" id="btn-confirm-paste">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy & Paste to Clipboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit / Create Prompt Modal -->
+  <div class="modal-overlay hidden" id="edit-modal">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="edit-modal-title">Create New Prompt</h2>
+          <p class="modal-subtitle">Use {{variable_name}} or {{variable:defaultValue}} for dynamic inputs.</p>
+        </div>
+        <button class="modal-close" id="edit-modal-close">&times;</button>
+      </div>
+
+      <form id="prompt-form" class="modal-body">
+        <input type="hidden" id="form-prompt-id">
+
+        <div class="form-group">
+          <label for="form-title">Title *</label>
+          <input type="text" id="form-title" required placeholder="e.g. Senior Code Review">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="form-category">Category</label>
+            <input type="text" id="form-category" list="category-suggestions" placeholder="e.g. Review, Debugging, Dev">
+            <datalist id="category-suggestions"></datalist>
+          </div>
+          <div class="form-group flex-1">
+            <label for="form-tags">Tags (comma-separated)</label>
+            <input type="text" id="form-tags" placeholder="e.g. typescript, quality, tdd">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="form-description">Description</label>
+          <input type="text" id="form-description" placeholder="Short description of what this prompt does">
+        </div>
+
+        <div class="form-group">
+          <div class="template-header">
+            <label for="form-template">Prompt Template *</label>
+            <span class="detected-vars" id="detected-vars-pill">0 variables detected</span>
+          </div>
+          <textarea id="form-template" rows="9" required placeholder="Write your prompt here... Use {{variable_name}} or {{variable:default}} for placeholders."></textarea>
+        </div>
+      </form>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="edit-modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-prompt">Save Prompt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div class="modal-overlay hidden" id="import-modal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2 class="modal-title">Import Prompts</h2>
+        <button class="modal-close" id="import-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Paste your exported JSON prompt list below:</p>
+        <textarea id="import-json-text" rows="8" placeholder="[ { &quot;title&quot;: &quot;...&quot;, &quot;template&quot;: &quot;...&quot; } ]"></textarea>
+        <div class="import-mode-options">
+          <label><input type="radio" name="import-mode" value="merge" checked> Merge with existing</label>
+          <label><input type="radio" name="import-mode" value="replace"> Replace all existing</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="import-modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-confirm-import">Import Prompts</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden">
+    <div class="toast-content" id="toast-message"></div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "name": "antigravity-toolkit",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Modular productivity toolkit for Google Antigravity featuring an extensible prompt library with template variables, search, clipboard integration, and web dashboard.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "agy-tools": "./bin/agy-tools.cmd",
+    "prompt-lib": "./bin/agy-tools.cmd"
+  },
+  "scripts": {
+    "build": "tsc && node -e \"import('fs').then(fs => fs.cpSync('src/web/public', 'dist/web/public', { recursive: true, force: true }))\"",
+    "build:watch": "tsc --watch",
+    "start": "node dist/cli.js",
+    "mcp": "node dist/mcp-server.js",
+    "ui": "node dist/cli.js ui",
+    "test": "npm run build && node --test dist/tests/**/*.test.js"
+  },
+  "keywords": [
+    "antigravity",
+    "antigravity-plugin",
+    "prompt-library",
+    "mcp",
+    "template-variables",
+    "clipboard",
+    "developer-tools"
+  ],
+  "author": "Antigravity Developer",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "typescript": "^5.7.3"
+  }
+}
