@@ -28,7 +28,7 @@ async function main() {
       const actualPort = await server.start(port);
       const url = `http://localhost:${actualPort}`;
 
-      console.log(`\n🚀 Antigravity Toolkit Web Dashboard running at: ${url}`);
+      console.log(`\n🚀 Antigravity Tools Web Dashboard running at: ${url}`);
       console.log(`Press Ctrl+C to stop.\n`);
 
       // Auto-open browser if not in headless/CI
@@ -123,10 +123,10 @@ async function main() {
     case 'help':
     default: {
       console.log(`
-Antigravity Toolkit CLI (v1.0.0)
+Antigravity Tools CLI (v1.3.0)
 
 Usage:
-  agy-tools ui [--port 4321]           Launch interactive Prompt Library Web Dashboard
+  agy-tools ui [--port 4321]           Launch interactive Antigravity Tools Web Dashboard
   agy-tools list [category]           List all prompts in library
   agy-tools paste <id> [--var k=v]     Render prompt and copy to system clipboard
   agy-tools get <id>                  View full prompt details as JSON

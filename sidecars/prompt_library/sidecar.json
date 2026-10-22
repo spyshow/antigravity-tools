@@ -3,17 +3,17 @@
   "args": [
     "dist/server.js"
   ],
-  "description": "Interactive Prompt Library & Template Manager for Antigravity",
-  "display_name": "Prompt Library",
+  "description": "Interactive Antigravity Tools Suite (Prompts, Roadmap & Ideation)",
+  "display_name": "Antigravity Tools",
   "has_web_ui": true,
   "restart_policy": "always",
   "ui_config": {
-    "display_name": "Prompt Library",
+    "display_name": "Antigravity Tools",
     "views": [
       {
         "entrypoint": "SIDECAR_UI_ENTRYPOINT_AUX_PANE",
         "path": "/ui.html",
-        "title": "Prompt Library"
+        "title": "Antigravity Tools"
       }
     ]
   }

@@ -327,7 +327,7 @@ export class RoadmapGenerator {
     }
 
     lines.push(`---`);
-    lines.push(`*Generated autonomously by Antigravity Toolkit — Built with MoSCoW & Competitor Analysis Architecture.*`);
+    lines.push(`*Generated autonomously by Antigravity Tools — Built with MoSCoW & Competitor Analysis Architecture.*`);
 
     return lines.join('\n');
   }

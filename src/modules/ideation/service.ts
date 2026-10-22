@@ -438,7 +438,7 @@ export class IdeationService {
     }
 
     lines.push(`---`);
-    lines.push(`*Generated autonomously by Antigravity Toolkit Ideation Engine — Inspired by Aperant.*`);
+    lines.push(`*Generated autonomously by Antigravity Tools Ideation Engine — Inspired by Aperant.*`);
 
     return lines.join('\n');
   }

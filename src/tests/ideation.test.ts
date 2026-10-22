@@ -26,7 +26,7 @@ test('IdeationService produces 4-pillar report with health scores and markdown e
   const service = new IdeationService();
   const report = await service.generateReport(process.cwd());
 
-  assert.strictEqual(report.projectName, 'antigravity-toolkit');
+  assert.strictEqual(report.projectName, 'antigravity-tools');
   assert.ok(report.codeImprovements.length >= 3);
   assert.ok(report.performanceOptimizations.length >= 2);
   assert.ok(report.securityVulnerabilities.length >= 2);

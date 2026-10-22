@@ -1,8 +1,8 @@
 {
-  "name": "antigravity-toolkit",
-  "version": "1.0.0",
+  "name": "antigravity-tools",
+  "version": "1.3.0",
   "type": "module",
-  "description": "Modular productivity toolkit for Google Antigravity featuring an extensible prompt library with template variables, search, clipboard integration, and web dashboard.",
+  "description": "Modular productivity toolkit for Google Antigravity featuring an extensible prompt library, AI strategic roadmap planner, and codebase ideation engine.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {

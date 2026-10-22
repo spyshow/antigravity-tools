@@ -1,6 +1,6 @@
-# Antigravity Toolkit Plugin
+# Antigravity Tools
 
-An extensible productivity plugin for [Google Antigravity](https://antigravity.google/docs/plugins/). Built natively in TypeScript/Node.js, it provides a modular architecture for multiple developer functions, starting with a powerful **Prompt Library** with template variables, search, clipboard integration, and an interactive Web Dashboard.
+An extensible productivity plugin for [Google Antigravity](https://antigravity.google/docs/plugins/). Built natively in TypeScript/Node.js, it provides a modular architecture for multiple developer functions, including a powerful **Prompt Library** with template variables & clipboard integration, an **AI Strategic Roadmap Planner** with competitor intelligence, and a deep **Codebase Ideation & Audit Engine** (Aperant model).
 
 ---
 

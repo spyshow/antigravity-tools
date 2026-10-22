@@ -1,5 +1,5 @@
 {
-  "projectName": "antigravity-toolkit",
+  "projectName": "antigravity-tools",
   "projectType": "plugin",
   "workspacePath": "D:\\BackUp\\programing_projects\\antigravity_tools",
   "techStack": {
@@ -61,5 +61,5 @@
       "Documentation for advanced plugin customizations"
     ]
   },
-  "createdAt": "2026-10-22T07:53:48.170Z"
+  "createdAt": "2026-10-22T08:07:41.745Z"
 }
