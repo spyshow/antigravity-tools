@@ -1453,8 +1453,8 @@ Inspect the referenced files, implement the recommended solution adhering to pro
   async function loadAgencyData() {
     try {
       const statusRes = await api('/api/agency/status');
-      if (statusRes && statusRes.status) {
-        agencyData = statusRes.status;
+      if (statusRes) {
+        agencyData = statusRes.status || statusRes;
         renderAgencyStatus(agencyData);
       }
 
@@ -1471,12 +1471,20 @@ Inspect the referenced files, implement the recommended solution adhering to pro
   function renderAgencyStatus(status) {
     if (!status) return;
 
+    const count = status.installedAgentsCount ?? status.agentCount ?? (agencyAgents ? agencyAgents.length : 0);
+    const isIntegrated = status.integrated ?? status.isIntegrated ?? false;
+    const files = status.filesPresent || {};
+    const hasReg = status.hasRegistry ?? files.registry ?? false;
+    const hasPipe = status.hasPipelineWorkflow ?? files.pipeline ?? false;
+    const hasRule = status.hasCallingRule ?? files.rule ?? false;
+    const hasRead = status.hasGuide ?? files.readme ?? false;
+
     if (agencyCountVal) {
-      agencyCountVal.textContent = status.installedAgentsCount || 0;
+      agencyCountVal.textContent = count;
     }
 
     if (agencyStatusVal) {
-      if (status.integrated) {
+      if (isIntegrated) {
         agencyStatusVal.textContent = 'Integrated';
         agencyStatusVal.className = 'health-score-val score-good';
       } else {
@@ -1486,16 +1494,16 @@ Inspect the referenced files, implement the recommended solution adhering to pro
     }
 
     if (agencyStatusDesc) {
-      agencyStatusDesc.textContent = status.integrated
+      agencyStatusDesc.textContent = isIntegrated
         ? 'Ready for multi-agent workflows'
         : 'Click Integrate to bootstrap';
     }
 
     // Update file pills
-    updateFilePill(fileCheckRegistry, status.hasRegistry, 'docs/agency-registry.md');
-    updateFilePill(fileCheckPipeline, status.hasPipelineWorkflow, '.agents/workflows/agency-pipeline.md');
-    updateFilePill(fileCheckRule, status.hasCallingRule, '.agents/rules/inter-agent-calling.md');
-    updateFilePill(fileCheckReadme, status.hasGuide, 'agency-readme.md');
+    updateFilePill(fileCheckRegistry, hasReg, 'docs/agency-registry.md');
+    updateFilePill(fileCheckPipeline, hasPipe, '.agents/workflows/agency-pipeline.md');
+    updateFilePill(fileCheckRule, hasRule, '.agents/rules/inter-agent-calling.md');
+    updateFilePill(fileCheckReadme, hasRead, 'agency-readme.md');
   }
 
   function updateFilePill(el, exists, label) {
@@ -1510,9 +1518,9 @@ Inspect the referenced files, implement the recommended solution adhering to pro
     const q = (agencySearchQuery || '').trim().toLowerCase();
     const filtered = agencyAgents.filter(a => {
       if (!q) return true;
-      return (a.id && a.id.toLowerCase().includes(q)) ||
-             (a.name && a.name.toLowerCase().includes(q)) ||
-             (a.description && a.description.toLowerCase().includes(q));
+      const slug = a.slug || a.id || a.name || '';
+      const desc = a.description || '';
+      return slug.toLowerCase().includes(q) || desc.toLowerCase().includes(q);
     });
 
     if (agencyAgentsCounter) {
@@ -1530,7 +1538,7 @@ Inspect the referenced files, implement the recommended solution adhering to pro
     }
 
     agencyDirectoryGrid.innerHTML = filtered.map(a => {
-      const displayId = a.id || a.name;
+      const displayId = a.slug || a.id || a.name;
       const cleanDesc = escapeHtml(a.description || 'Specialized AI workflow agent');
       return `
         <div class="agency-agent-card">
@@ -1587,13 +1595,17 @@ Inspect the referenced files, implement the recommended solution adhering to pro
     showToast('⚡ Integrating Agency Agents...', 'info');
 
     try {
-      const res = await api('/api/agency/integrate', { method: 'POST' });
-      if (res.success) {
-        showToast(`✅ Integrated ${res.result.detectedAgents} Agency Agents! Generated registry & pipeline.`, 'success');
+      const res = await api('/api/agency/integrate', {
+        method: 'POST',
+        body: JSON.stringify({ workspacePath: currentWorkspace })
+      });
+      if (res && res.success) {
+        const count = res.agentsDetected ?? res.detectedAgents ?? res.result?.detectedAgents ?? 0;
+        showToast(`✅ Integrated ${count} Agency Agents! Generated registry & pipeline.`, 'success');
         await loadAgencyData();
         await loadData(); // Reload prompts so new Agency prompts show in Prompt Library
       } else {
-        showToast(res.error || 'Integration failed', 'error');
+        showToast((res && res.error) || 'Integration failed', 'error');
       }
     } catch (err) {
       showToast(`Integration error: ${err.message}`, 'error');

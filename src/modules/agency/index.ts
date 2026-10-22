@@ -79,7 +79,17 @@ export class AgencyModule implements PluginModule {
       // GET /api/agency/status
       if (pathname === '/api/agency/status' && method === 'GET') {
         const status = this.service.getStatus(wsPath);
-        sendJson(200, { ...status, workspace: wsPath });
+        sendJson(200, {
+          ...status,
+          status,
+          installedAgentsCount: status.agentCount,
+          integrated: status.isIntegrated,
+          hasRegistry: status.filesPresent.registry,
+          hasPipelineWorkflow: status.filesPresent.pipeline,
+          hasCallingRule: status.filesPresent.rule,
+          hasGuide: status.filesPresent.readme,
+          workspace: wsPath
+        });
         return true;
       }
 
@@ -95,7 +105,14 @@ export class AgencyModule implements PluginModule {
         const body = await parseBody();
         const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
         const result = await this.service.integrate(targetPath);
-        sendJson(200, result);
+        sendJson(200, {
+          ...result,
+          result: {
+            ...result,
+            detectedAgents: result.agentsDetected
+          },
+          detectedAgents: result.agentsDetected
+        });
         return true;
       }
 
