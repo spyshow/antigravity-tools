@@ -3,5 +3,6 @@
   "name": "antigravity-tools",
   "displayName": "Antigravity Tools",
   "description": "Developer productivity suite featuring Prompt Library, AI Strategic Roadmap with competitor analysis, Codebase Ideation with performance & security audits, and Agency Agents multi-agent ecosystem integration.",
-  "version": "1.4.0"
+  "version": "1.4.0",
+  "logo": "assets/logo.png"
 }

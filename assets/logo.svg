@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="gradA1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="gradA2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="gradA3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#9333ea"/>
+    </linearGradient>
+  </defs>
+  <!-- Background icon container with subtle dark rounded rect for contrast -->
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Top floating apex facet -->
+  <polygon points="128,38 174,106 128,92 82,106" fill="url(#gradA1)"/>
+  <!-- Left wing facet -->
+  <polygon points="74,122 122,108 122,196 46,218" fill="url(#gradA2)"/>
+  <!-- Right wing facet -->
+  <polygon points="182,122 210,218 134,196 134,108" fill="url(#gradA3)"/>
+</svg>

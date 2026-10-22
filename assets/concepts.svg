@@ -1,0 +1,297 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="840" viewBox="0 0 1600 840"><rect width="1600" height="840" fill="#f7f7f4"/><text x="60" y="78" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="40" font-weight="700" fill="#161616">Logo concepts</text><text x="60" y="116" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="20" fill="#6b6b6b">Concepts for review — pick a direction (or tell me what you like in each).</text><rect x="60" y="150" width="474.667" height="630" rx="18" fill="#fff" stroke="#161616" stroke-width="2"/><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="90" y="190" width="414.667" height="300" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="c0-gradA1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="c0-gradA2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="c0-gradA3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#9333ea"/>
+    </linearGradient>
+  </defs>
+  <!-- Background icon container with subtle dark rounded rect for contrast -->
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Top floating apex facet -->
+  <polygon points="128,38 174,106 128,92 82,106" fill="url(#c0-gradA1)"/>
+  <!-- Left wing facet -->
+  <polygon points="74,122 122,108 122,196 46,218" fill="url(#c0-gradA2)"/>
+  <!-- Right wing facet -->
+  <polygon points="182,122 210,218 134,196 134,108" fill="url(#c0-gradA3)"/>
+</svg>
+</g><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="90" y="516" width="64" height="64" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="s064-gradA1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="s064-gradA2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="s064-gradA3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#9333ea"/>
+    </linearGradient>
+  </defs>
+  <!-- Background icon container with subtle dark rounded rect for contrast -->
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Top floating apex facet -->
+  <polygon points="128,38 174,106 128,92 82,106" fill="url(#s064-gradA1)"/>
+  <!-- Left wing facet -->
+  <polygon points="74,122 122,108 122,196 46,218" fill="url(#s064-gradA2)"/>
+  <!-- Right wing facet -->
+  <polygon points="182,122 210,218 134,196 134,108" fill="url(#s064-gradA3)"/>
+</svg>
+</g><text x="122" y="600" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">64px</text><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="180" y="548" width="32" height="32" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="s032-gradA1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="s032-gradA2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="s032-gradA3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#9333ea"/>
+    </linearGradient>
+  </defs>
+  <!-- Background icon container with subtle dark rounded rect for contrast -->
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Top floating apex facet -->
+  <polygon points="128,38 174,106 128,92 82,106" fill="url(#s032-gradA1)"/>
+  <!-- Left wing facet -->
+  <polygon points="74,122 122,108 122,196 46,218" fill="url(#s032-gradA2)"/>
+  <!-- Right wing facet -->
+  <polygon points="182,122 210,218 134,196 134,108" fill="url(#s032-gradA3)"/>
+</svg>
+</g><text x="196" y="600" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">32px</text><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="238" y="564" width="16" height="16" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="s016-gradA1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="s016-gradA2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="s016-gradA3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#9333ea"/>
+    </linearGradient>
+  </defs>
+  <!-- Background icon container with subtle dark rounded rect for contrast -->
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Top floating apex facet -->
+  <polygon points="128,38 174,106 128,92 82,106" fill="url(#s016-gradA1)"/>
+  <!-- Left wing facet -->
+  <polygon points="74,122 122,108 122,196 46,218" fill="url(#s016-gradA2)"/>
+  <!-- Right wing facet -->
+  <polygon points="182,122 210,218 134,196 134,108" fill="url(#s016-gradA3)"/>
+</svg>
+</g><text x="246" y="600" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">16px</text><text x="90.0" y="636" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#161616">A · Ascendant Delta</text><text x="90.0" y="664" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#161616" letter-spacing="1.5">RECOMMENDED</text><text x="90.0" y="698" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">Upward aerodynamic lift, letterform A</text><rect x="562.667" y="150" width="474.667" height="630" rx="18" fill="#fff" stroke="#e4e4e0" stroke-width="1"/><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="592.667" y="190" width="414.667" height="300" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="c1-gradBTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="c1-gradBLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </linearGradient>
+    <linearGradient id="c1-gradBRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4338ca"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="c1-gradBBeam" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Levitating Energy Beam -->
+  <polygon points="98,83 158,83 128,136" fill="url(#c1-gradBBeam)"/>
+  <!-- Levitating Top Rhombus -->
+  <polygon points="128,32 188,66 128,100 68,66" fill="url(#c1-gradBTop)"/>
+  <!-- Base Cube Left Facet -->
+  <polygon points="128,136 68,102 68,176 128,210" fill="url(#c1-gradBLeft)"/>
+  <!-- Base Cube Right Facet -->
+  <polygon points="128,136 188,102 188,176 128,210" fill="url(#c1-gradBRight)"/>
+  <!-- Subtle core pulse -->
+  <circle cx="128" cy="116" r="6" fill="#38bdf8"/>
+</svg>
+</g><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="592.667" y="516" width="64" height="64" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="s164-gradBTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="s164-gradBLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </linearGradient>
+    <linearGradient id="s164-gradBRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4338ca"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="s164-gradBBeam" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Levitating Energy Beam -->
+  <polygon points="98,83 158,83 128,136" fill="url(#s164-gradBBeam)"/>
+  <!-- Levitating Top Rhombus -->
+  <polygon points="128,32 188,66 128,100 68,66" fill="url(#s164-gradBTop)"/>
+  <!-- Base Cube Left Facet -->
+  <polygon points="128,136 68,102 68,176 128,210" fill="url(#s164-gradBLeft)"/>
+  <!-- Base Cube Right Facet -->
+  <polygon points="128,136 188,102 188,176 128,210" fill="url(#s164-gradBRight)"/>
+  <!-- Subtle core pulse -->
+  <circle cx="128" cy="116" r="6" fill="#38bdf8"/>
+</svg>
+</g><text x="624.667" y="600" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">64px</text><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="682.667" y="548" width="32" height="32" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="s132-gradBTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="s132-gradBLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </linearGradient>
+    <linearGradient id="s132-gradBRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4338ca"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="s132-gradBBeam" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Levitating Energy Beam -->
+  <polygon points="98,83 158,83 128,136" fill="url(#s132-gradBBeam)"/>
+  <!-- Levitating Top Rhombus -->
+  <polygon points="128,32 188,66 128,100 68,66" fill="url(#s132-gradBTop)"/>
+  <!-- Base Cube Left Facet -->
+  <polygon points="128,136 68,102 68,176 128,210" fill="url(#s132-gradBLeft)"/>
+  <!-- Base Cube Right Facet -->
+  <polygon points="128,136 188,102 188,176 128,210" fill="url(#s132-gradBRight)"/>
+  <!-- Subtle core pulse -->
+  <circle cx="128" cy="116" r="6" fill="#38bdf8"/>
+</svg>
+</g><text x="698.667" y="600" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">32px</text><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="740.667" y="564" width="16" height="16" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="s116-gradBTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="s116-gradBLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </linearGradient>
+    <linearGradient id="s116-gradBRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4338ca"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="s116-gradBBeam" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Levitating Energy Beam -->
+  <polygon points="98,83 158,83 128,136" fill="url(#s116-gradBBeam)"/>
+  <!-- Levitating Top Rhombus -->
+  <polygon points="128,32 188,66 128,100 68,66" fill="url(#s116-gradBTop)"/>
+  <!-- Base Cube Left Facet -->
+  <polygon points="128,136 68,102 68,176 128,210" fill="url(#s116-gradBLeft)"/>
+  <!-- Base Cube Right Facet -->
+  <polygon points="128,136 188,102 188,176 128,210" fill="url(#s116-gradBRight)"/>
+  <!-- Subtle core pulse -->
+  <circle cx="128" cy="116" r="6" fill="#38bdf8"/>
+</svg>
+</g><text x="748.667" y="600" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">16px</text><text x="592.6666666666667" y="636" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#161616">B · Floating Prism</text><text x="592.6666666666667" y="670" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">Zero-G modular cube with levitating apex</text><rect x="1065.33" y="150" width="474.667" height="630" rx="18" fill="#fff" stroke="#e4e4e0" stroke-width="1"/><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="1095.33" y="190" width="414.667" height="300" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="c2-gradC1" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="50%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="c2-gradC2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Continuous Orbital Flux Loop (Negative Space Core) -->
+  <path d="M128,42 C178,42 216,80 216,130 C216,170 188,204 150,212 L150,186 C174,179 190,157 190,130 C190,95 162,68 128,68 C94,68 66,95 66,130 C66,157 82,179 106,186 L106,212 C68,204 40,170 40,130 C40,80 78,42 128,42 Z" fill="url(#c2-gradC1)"/>
+  <!-- Central Anti-Gravity Ascendant Vector -->
+  <polygon points="128,76 160,154 128,142 96,154" fill="url(#c2-gradC2)"/>
+  <polygon points="128,148 144,188 128,182 112,188" fill="#38bdf8"/>
+</svg>
+</g><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="1095.33" y="516" width="64" height="64" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="s264-gradC1" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="50%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="s264-gradC2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Continuous Orbital Flux Loop (Negative Space Core) -->
+  <path d="M128,42 C178,42 216,80 216,130 C216,170 188,204 150,212 L150,186 C174,179 190,157 190,130 C190,95 162,68 128,68 C94,68 66,95 66,130 C66,157 82,179 106,186 L106,212 C68,204 40,170 40,130 C40,80 78,42 128,42 Z" fill="url(#s264-gradC1)"/>
+  <!-- Central Anti-Gravity Ascendant Vector -->
+  <polygon points="128,76 160,154 128,142 96,154" fill="url(#s264-gradC2)"/>
+  <polygon points="128,148 144,188 128,182 112,188" fill="#38bdf8"/>
+</svg>
+</g><text x="1127.33" y="600" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">64px</text><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="1185.33" y="548" width="32" height="32" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="s232-gradC1" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="50%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="s232-gradC2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Continuous Orbital Flux Loop (Negative Space Core) -->
+  <path d="M128,42 C178,42 216,80 216,130 C216,170 188,204 150,212 L150,186 C174,179 190,157 190,130 C190,95 162,68 128,68 C94,68 66,95 66,130 C66,157 82,179 106,186 L106,212 C68,204 40,170 40,130 C40,80 78,42 128,42 Z" fill="url(#s232-gradC1)"/>
+  <!-- Central Anti-Gravity Ascendant Vector -->
+  <polygon points="128,76 160,154 128,142 96,154" fill="url(#s232-gradC2)"/>
+  <polygon points="128,148 144,188 128,182 112,188" fill="#38bdf8"/>
+</svg>
+</g><text x="1201.33" y="600" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">32px</text><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="1243.33" y="564" width="16" height="16" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="s216-gradC1" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="50%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="s216-gradC2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="#0d1117"/>
+  <!-- Continuous Orbital Flux Loop (Negative Space Core) -->
+  <path d="M128,42 C178,42 216,80 216,130 C216,170 188,204 150,212 L150,186 C174,179 190,157 190,130 C190,95 162,68 128,68 C94,68 66,95 66,130 C66,157 82,179 106,186 L106,212 C68,204 40,170 40,130 C40,80 78,42 128,42 Z" fill="url(#s216-gradC1)"/>
+  <!-- Central Anti-Gravity Ascendant Vector -->
+  <polygon points="128,76 160,154 128,142 96,154" fill="url(#s216-gradC2)"/>
+  <polygon points="128,148 144,188 128,182 112,188" fill="#38bdf8"/>
+</svg>
+</g><text x="1251.33" y="600" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">16px</text><text x="1095.3333333333335" y="636" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#161616">C · Gravitational Horizon</text><text x="1095.3333333333335" y="670" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">Continuous orbital loop with vector launch</text></svg>
