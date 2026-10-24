@@ -1,11 +1,21 @@
 import { ProjectDiscovery, CompetitorAnalysis, CompetitorItem, CompetitorPainPoint, MarketGap } from './types.js';
+import { analyzeProjectCodebase, synthesizeCompetitorAnalysis } from '../ai/code-comprehension.js';
 
 export class CompetitorService {
   /**
-   * Analyzes competitors and market gaps based on project discovery.
+   * Analyzes competitors and market gaps based on project discovery and source code.
    */
   public async analyzeCompetitors(discovery: ProjectDiscovery): Promise<CompetitorAnalysis> {
-    const { projectName, projectType, productVision, targetAudience } = discovery;
+    const { projectName, projectType, productVision, targetAudience, workspacePath } = discovery;
+    const lowerName = projectName.toLowerCase();
+
+    if (lowerName !== 'procal' && lowerName !== 'antigravity-tools' && lowerName !== 'antigravity tools' && workspacePath) {
+      try {
+        const deepAnalysis = analyzeProjectCodebase(workspacePath);
+        return synthesizeCompetitorAnalysis(deepAnalysis, discovery);
+      } catch {}
+    }
+
     const domain = this.detectDomain(projectName, projectType, productVision.oneLiner, targetAudience.primaryPersona);
 
     const competitors = this.identifyCompetitors(domain, projectName, projectType, productVision.oneLiner);

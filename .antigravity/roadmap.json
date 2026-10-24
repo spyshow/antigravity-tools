@@ -1,13 +1,14 @@
 {
-  "id": "roadmap-1792662684070",
+  "id": "roadmap-1792840987328",
   "projectName": "antigravity-tools",
   "version": "1.0.0",
-  "vision": "An extensible developer productivity suite for [Google Antigravity](https://antigravity.google/docs/plugins/). Built natively in TypeScript/Node.js, i — Provides an autonomous, developer-friendly experience with first-class TypeScript integration and modular architecture.",
+  "vision": "Modular productivity toolkit for Google Antigravity featuring an extensible prompt library, AI strategic roadmap planner, codebase ideation engine, and Agency Agents ecosystem integration. — Provides an autonomous developer assistant embedding prompt libraries, MoSCoW roadmaps, and multi-agent workflows directly into IDE sidecars.",
   "targetAudience": {
-    "primary": "Developers & AI Engineers looking for automated agent extensions",
+    "primary": "Full-Stack Software Engineers & AI Pair Programmers",
     "secondary": [
-      "Open-Source Contributors",
-      "Workflow Automation Engineers"
+      "Technical Leads",
+      "DevOps / Platform Engineers",
+      "Product Developers"
     ]
   },
   "phases": [
@@ -65,7 +66,7 @@
         "Unit test coverage exceeds 80% for core contracts"
       ],
       "userStories": [
-        "As a Developers & AI Engineers looking for automated agent extensions, I want a modular architecture so that new tools can be added reliably."
+        "As a Full-Stack Software Engineers & AI Pair Programmers, I want a modular architecture so that new tools can be added reliably."
       ],
       "competitorInsightIds": []
     },
@@ -81,14 +82,14 @@
       "dependencies": [
         "FEAT-01"
       ],
-      "status": "in_progress",
+      "status": "completed",
       "acceptanceCriteria": [
         "Sidecar loads seamlessly inside IDE aux pane with security token handshake",
         "Clean tabbed interface switching between Prompt Library and AI Roadmap",
         "Responsive design with dark mode support matching IDE theme"
       ],
       "userStories": [
-        "As a Developers & AI Engineers looking for automated agent extensions, I want a visual sidecar UI so that I don't have to remember manual commands."
+        "As a Full-Stack Software Engineers & AI Pair Programmers, I want a visual sidecar UI so that I don't have to remember manual commands."
       ],
       "competitorInsightIds": [
         "CP-01",
@@ -132,7 +133,7 @@
       "dependencies": [
         "FEAT-01"
       ],
-      "status": "completed",
+      "status": "in_progress",
       "acceptanceCriteria": [
         "Detects package.json, requirements.txt, pyproject.toml, Cargo.toml, go.mod",
         "Extracts README summaries and TODO/FIXME comments",
@@ -252,8 +253,8 @@
     }
   ],
   "metadata": {
-    "createdAt": "2026-10-22T09:51:24.070Z",
-    "updatedAt": "2026-10-22T09:51:24.070Z",
+    "createdAt": "2026-10-24T11:23:07.329Z",
+    "updatedAt": "2026-10-24T11:23:07.329Z",
     "generatedBy": "Antigravity AI Roadmap Engine (Aperant-Inspired)",
     "prioritizationFramework": "MoSCoW",
     "competitorAnalysisUsed": true

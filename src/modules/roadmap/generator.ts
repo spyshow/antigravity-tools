@@ -1,4 +1,5 @@
 import { ProjectDiscovery, CompetitorAnalysis, RoadmapDocument, RoadmapPhase, RoadmapFeature } from './types.js';
+import { analyzeProjectCodebase, synthesizeMissingFeaturesRoadmap } from '../ai/code-comprehension.js';
 
 export class RoadmapGenerator {
   /**
@@ -6,10 +7,19 @@ export class RoadmapGenerator {
    */
   public generateRoadmap(discovery: ProjectDiscovery, competitorAnalysis: CompetitorAnalysis): RoadmapDocument {
     const roadmapId = `roadmap-${Date.now()}`;
-    const { projectName, productVision, targetAudience, currentState } = discovery;
-    const isElectricalCad = /(electrical|voltage|breaker|cable|transformer|power-distribution|phasebalance|procal)/i.test(
-      `${projectName} ${productVision.oneLiner} ${targetAudience.primaryPersona}`
-    );
+    const { projectName, productVision, targetAudience, currentState, workspacePath } = discovery;
+    const lowerName = projectName.toLowerCase();
+    const isElectricalCad = lowerName === 'procal';
+    const isSelf = lowerName === 'antigravity-tools' || lowerName === 'antigravity tools';
+    if (!isElectricalCad && !isSelf) {
+      if (workspacePath) {
+        try {
+          const deepAnalysis = analyzeProjectCodebase(workspacePath);
+          return synthesizeMissingFeaturesRoadmap(deepAnalysis, discovery, competitorAnalysis);
+        } catch {}
+      }
+      return this.generateDerivedRoadmap(discovery, competitorAnalysis);
+    }
 
     // Define 3 standard strategic phases (matching Aperant's progressive architecture)
     const phases: RoadmapPhase[] = [
@@ -414,6 +424,131 @@ export class RoadmapGenerator {
         competitorInsightIds: ['CP-06']
       }
     ];
+  }
+
+  /**
+   * Offline roadmap derived strictly from the analyzed project: README features become
+   * completed foundation items, PLAN/TODO gaps become planned work, and competitor market
+   * gaps become differentiators. No content from other projects is reused.
+   */
+  private generateDerivedRoadmap(discovery: ProjectDiscovery, competitorAnalysis: CompetitorAnalysis): RoadmapDocument {
+    const { projectName, productVision, targetAudience, currentState, techStack } = discovery;
+    const persona = targetAudience.primaryPersona || 'user';
+    const painIds = competitorAnalysis.competitors.flatMap(c => c.painPoints.map(p => p.id));
+    let painCursor = 0;
+    const nextPain = (): string[] => (painIds.length ? [painIds[painCursor++ % painIds.length]] : []);
+    const clean = (s: string) => s.replace(/^Phase step:\s*/i, '').replace(/\s+/g, ' ').trim();
+
+    type Draft = Omit<RoadmapFeature, 'id' | 'dependencies'>;
+    const drafts: Draft[] = [];
+
+    for (const feat of currentState.existingFeatures.slice(0, 3)) {
+      const t = clean(feat);
+      drafts.push({
+        title: t,
+        description: `Existing capability detected in ${projectName}: ${t}. Harden, document and cover it with tests.`,
+        rationale: 'Already implemented according to the project documentation — forms the foundation the rest of the roadmap builds on.',
+        priority: 'must', complexity: 'medium', impact: 'high', phaseId: 'phase-1', status: 'completed',
+        acceptanceCriteria: [`${t} works end-to-end with the current ${techStack.primaryLanguage} stack`, `Automated tests cover the main ${t} flows`],
+        userStories: [`As a ${persona}, I want ${t.toLowerCase()} to work reliably so that I can depend on ${projectName} daily.`],
+        competitorInsightIds: []
+      });
+    }
+
+    for (const gap of currentState.knownGaps.slice(0, 4)) {
+      const t = clean(gap);
+      drafts.push({
+        title: t.length > 90 ? t.slice(0, 87) + '…' : t,
+        description: `Planned work found in the project's own plan/TODO notes: ${t}`,
+        rationale: 'Explicitly listed by the project as outstanding work.',
+        priority: drafts.length < 5 ? 'must' : 'should', complexity: 'medium', impact: 'high', phaseId: 'phase-2', status: 'planned',
+        acceptanceCriteria: [`"${t.slice(0, 80)}" is implemented and verified`, 'Documentation and tests updated accordingly'],
+        userStories: [`As a ${persona}, I want ${t.slice(0, 80).toLowerCase()} so that the product covers my workflow completely.`],
+        competitorInsightIds: nextPain()
+      });
+    }
+
+    for (const gap of competitorAnalysis.marketGaps.slice(0, 3)) {
+      drafts.push({
+        title: gap.suggestedFeature || gap.description.slice(0, 80),
+        description: gap.description,
+        rationale: `Market gap affecting ${gap.affectedCompetitors.join(', ') || 'competitors'} — an opportunity for ${projectName} to differentiate.`,
+        priority: 'could', complexity: 'high', impact: gap.opportunitySize, phaseId: 'phase-3', status: 'idea',
+        acceptanceCriteria: [`${gap.suggestedFeature || 'Feature'} shipped behind a feature flag`, 'Validated with at least one real user workflow'],
+        userStories: [`As a ${persona}, I want ${(gap.suggestedFeature || 'this capability').toLowerCase()} so that I don't need a competing tool.`],
+        competitorInsightIds: nextPain()
+      });
+    }
+
+    const engineering: Array<[string, string]> = [
+      ['Automated test suite & CI pipeline', `Add automated tests and a CI workflow for the ${techStack.primaryLanguage} codebase${techStack.frameworks.length ? ` (${techStack.frameworks.join(', ')})` : ''}.`],
+      ['Error handling, logging & observability', 'Consistent error handling, structured logs and basic runtime metrics across the application.'],
+      ['Packaging, deployment & onboarding docs', `One-command setup and deployment for ${projectName}, with a step-by-step getting-started guide.`]
+    ];
+    for (const [title, description] of engineering) {
+      if (drafts.length >= 9) break;
+      drafts.push({
+        title, description,
+        rationale: 'Engineering foundation required to scale the project safely.',
+        priority: 'should', complexity: 'medium', impact: 'medium', phaseId: 'phase-2', status: 'planned',
+        acceptanceCriteria: [`${title} implemented for the main code paths`, 'Documented in the README'],
+        userStories: [`As a maintainer of ${projectName}, I want ${title.toLowerCase()} so that releases are predictable.`],
+        competitorInsightIds: nextPain()
+      });
+    }
+
+    while (drafts.length < 8) {
+      const n = drafts.length + 1;
+      drafts.push({
+        title: `User feedback iteration ${n}`,
+        description: `Collect feedback from ${persona}s and prioritize the top requested improvement.`,
+        rationale: 'Keeps the roadmap anchored to real user needs.',
+        priority: 'could', complexity: 'low', impact: 'medium', phaseId: 'phase-3', status: 'idea',
+        acceptanceCriteria: ['Feedback collected from at least 3 users', 'Top request scoped and scheduled'],
+        userStories: [`As a ${persona}, I want my feedback acted on so that ${projectName} fits my workflow.`],
+        competitorInsightIds: nextPain()
+      });
+    }
+
+    const features: RoadmapFeature[] = drafts.map((d, i) => ({
+      ...d,
+      id: `FEAT-${String(i + 1).padStart(2, '0')}`,
+      dependencies: d.phaseId === 'phase-1' || i === 0 ? [] : ['FEAT-01']
+    }));
+    if (!features.some(f => f.priority === 'must')) features[0].priority = 'must';
+    if (!features.some(f => f.priority === 'should')) features[features.length - 1].priority = 'should';
+
+    const phaseMeta: Array<[string, string, string]> = [
+      ['phase-1', 'Phase 1: Current Foundation', `Capabilities ${projectName} already provides, hardened for production.`],
+      ['phase-2', 'Phase 2: Planned Work & Engineering Quality', "Outstanding items from the project's own plan plus engineering foundations."],
+      ['phase-3', 'Phase 3: Differentiation & Growth', 'Opportunities from competitor gaps and user feedback.']
+    ];
+    const phases: RoadmapPhase[] = phaseMeta.map(([id, name, description], i) => {
+      const ids = features.filter(f => f.phaseId === id).map(f => f.id);
+      const done = features.filter(f => f.phaseId === id && f.status === 'completed').length;
+      return {
+        id, name, description, order: i + 1,
+        status: ids.length && done === ids.length ? 'completed' : done > 0 ? 'in_progress' : 'planned',
+        features: ids
+      };
+    });
+
+    return {
+      id: `roadmap-${Date.now()}`,
+      projectName,
+      version: '1.0.0',
+      vision: `${productVision.oneLiner}${productVision.valueProposition ? ' — ' + productVision.valueProposition : ''}`,
+      targetAudience: { primary: targetAudience.primaryPersona, secondary: targetAudience.secondaryPersonas },
+      phases,
+      features,
+      metadata: {
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        generatedBy: 'Offline heuristic (derived from README/PLAN/TODOs — add a Gemini key for code-aware AI roadmap)',
+        prioritizationFramework: 'MoSCoW',
+        competitorAnalysisUsed: competitorAnalysis.competitors.length > 0
+      }
+    };
   }
 
   /**

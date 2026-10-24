@@ -2,6 +2,8 @@ import { MCPToolDefinition, MCPToolResult } from '../../types.js';
 import { IdeationService } from './service.js';
 import { IdeationStorage } from './storage.js';
 import { normalizeWorkspacePath, getActiveWorkspace } from '../workspace.js';
+import { normalizeIdeationPayload } from '../ai/ai-ideation.js';
+import { buildProjectContext } from '../ai/context-builder.js';
 
 export function createIdeationTools(): MCPToolDefinition[] {
   return [
@@ -65,6 +67,24 @@ export function createIdeationTools(): MCPToolDefinition[] {
           }
         }
       }
+    },
+    {
+      name: 'ideation_save_generated',
+      description: 'Save an AI-authored IdeationReport (codeImprovements, performanceOptimizations, securityVulnerabilities, codeQualityIssues) for the specified workspace.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          workspacePath: {
+            type: 'string',
+            description: 'Workspace root directory.'
+          },
+          payload: {
+            type: 'object',
+            description: 'Object containing { projectName, codeImprovements, performanceOptimizations, securityVulnerabilities, codeQualityIssues }.'
+          }
+        },
+        required: ['payload']
+      }
     }
   ];
 }
@@ -79,7 +99,7 @@ export function createIdeationToolHandler(
 
       switch (name) {
         case 'ideation_analyze': {
-          const report = await service.generateReport(wsPath);
+          const report = await service.generateBestReport(wsPath);
           if (args.saveToWorkspace !== false) {
             await storage.saveReport(report, wsPath);
           }
@@ -96,7 +116,7 @@ export function createIdeationToolHandler(
         case 'ideation_get': {
           let report = await storage.getReport(wsPath);
           if (!report) {
-            report = await service.generateReport(wsPath);
+            report = await service.generateBestReport(wsPath);
             await storage.saveReport(report, wsPath);
           }
           return {
@@ -136,6 +156,25 @@ export function createIdeationToolHandler(
               {
                 type: 'text',
                 text: `Successfully exported IDEATION.md to: ${savedPath}\n\n${md.slice(0, 500)}...`
+              }
+            ]
+          };
+        }
+
+        case 'ideation_save_generated': {
+          const ctx = buildProjectContext(wsPath, 10000);
+          const partial = normalizeIdeationPayload(
+            args.payload || args,
+            ctx,
+            'Antigravity AI Agent (Code-Aware)'
+          );
+          const report = service.finalizeReport(partial);
+          await storage.saveReport(report, wsPath);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `Saved AI-generated ideation report for ${report.projectName}.`
               }
             ]
           };

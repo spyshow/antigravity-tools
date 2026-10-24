@@ -86,7 +86,7 @@ export class IdeationModule implements PluginModule {
       if (pathname === '/api/ideation/analyze' && method === 'POST') {
         const body = await parseBody();
         const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
-        const report = await this.service.generateReport(targetPath);
+        const report = await this.service.generateBestReport(targetPath);
         await this.storage.saveReport(report, targetPath);
         sendJson(200, report);
         return true;

@@ -1,12 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { ProjectDiscovery, TechStackInfo, TargetAudience, ProductVision, CurrentStateAssessment } from './types.js';
+import { analyzeProjectCodebase, synthesizeProjectDiscovery } from '../ai/code-comprehension.js';
 
 export type ProjectDomain = 'electrical-cad' | 'devtools-ai' | 'ecommerce' | 'fintech' | 'healthcare' | 'software-platform';
 
 export class ProjectAnalyzer {
   /**
-   * Performs automated deep discovery of a project repository.
+   * Performs automated deep discovery of a project repository by reading its actual source code.
    */
   public async analyzeWorkspace(workspacePath: string = process.cwd()): Promise<ProjectDiscovery> {
     const resolvedPath = path.resolve(workspacePath);
@@ -14,8 +15,16 @@ export class ProjectAnalyzer {
       throw new Error(`Workspace path does not exist: ${resolvedPath}`);
     }
 
+    const folderName = path.basename(resolvedPath).toLowerCase();
     const pkgInfo = this.readPackageInfo(resolvedPath);
     const projectName = this.detectProjectName(resolvedPath, pkgInfo);
+    const lowerName = projectName.toLowerCase();
+
+    // For any user project (other than legacy ProCal / self), run the deep source-code comprehension engine
+    if (folderName !== 'procal' && lowerName !== 'procal' && lowerName !== 'antigravity-tools' && lowerName !== 'antigravity tools') {
+      const deepAnalysis = analyzeProjectCodebase(resolvedPath);
+      return synthesizeProjectDiscovery(deepAnalysis);
+    }
     const techStack = await this.detectTechStack(resolvedPath, pkgInfo);
     const projectType = this.detectProjectType(resolvedPath, techStack);
     const readmeContent = this.readReadme(resolvedPath);
@@ -376,7 +385,7 @@ export class ProjectAnalyzer {
     let problemStatement = `Users and teams need an efficient, high-performance way to manage workflows in ${name} without manual friction.`;
     let valueProposition = `Provides an autonomous, reliable platform with first-class ${stack.primaryLanguage} integration and modular architecture.`;
 
-    if (domain === 'electrical-cad') {
+    if (domain === 'electrical-cad' && name.toLowerCase() === 'procal') {
       problemStatement = 'Designing compliant low-voltage power distribution systems involves complex, error-prone manual calculations across conflicting international standards (IEC / NEC).';
       valueProposition = 'Automates end-to-end electrical load calculations, per-phase balancing, breaker sizing, and single-line diagram generation with full mathematical provenance.';
     } else if (domain === 'devtools-ai') {
@@ -394,7 +403,7 @@ export class ProjectAnalyzer {
       oneLiner,
       problemStatement,
       valueProposition,
-      successMetrics: domain === 'electrical-cad' ? [
+      successMetrics: domain === 'electrical-cad' && name.toLowerCase() === 'procal' ? [
         'Calculation accuracy matching benchmarked standards (IEC 60364 & IEC 60909)',
         'Significant time savings per building submittal (> 70% faster)',
         'Zero-error protection coordination and breaker selectivity validation'

@@ -2,7 +2,7 @@
   "projectName": "antigravity-tools",
   "projectType": "plugin",
   "domain": "devtools-ai",
-  "workspacePath": "D:\\BackUp\\programing_projects\\antigravity_tools",
+  "workspacePath": "d:\\BackUp\\programing_projects\\antigravity_tools",
   "techStack": {
     "primaryLanguage": "TypeScript",
     "frameworks": [],
@@ -65,5 +65,5 @@
       "Documentation for advanced plugin customizations"
     ]
   },
-  "createdAt": "2026-10-22T12:02:00.731Z"
+  "createdAt": "2026-10-24T11:23:06.364Z"
 }

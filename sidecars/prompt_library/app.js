@@ -12,6 +12,7 @@ let currentPasteValues = {};
 // Active Workspace State
 let currentWorkspace = '';
 let currentWorkspaceName = '';
+let resetProjectScopedState = null;
 
 // DOM Elements
 const promptsGrid = document.getElementById('prompts-grid');
@@ -72,6 +73,10 @@ async function setWorkspace(newWs, forceReload = false) {
   if (hasChanged || forceReload) {
     currentWorkspace = normalized;
     currentWorkspaceName = normalized ? normalized.split(/[\\/]/).pop() : '';
+
+    if (hasChanged && typeof resetProjectScopedState === 'function') {
+      resetProjectScopedState();
+    }
 
     try {
       const res = await fetch('/api/workspace', {
@@ -811,7 +816,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       ...discovery.techStack.tools
     ].filter(Boolean).map(t => `<span class="chip">${escapeHtml(t)}</span>`).join('');
 
-    const gapsList = discovery.currentState.knownGaps.slice(0, 3)
+    const existingList = (discovery.currentState?.existingFeatures || []).slice(0, 6)
+      .map(f => `<li>${escapeHtml(f)}</li>`).join('');
+
+    const gapsList = (discovery.currentState?.knownGaps || []).slice(0, 4)
       .map(g => `<li>${escapeHtml(g)}</li>`).join('');
 
     container.innerHTML = `
@@ -828,8 +836,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="intel-label">Product Vision & Problem Statement</div>
         <div class="intel-value"><em>"${escapeHtml(discovery.productVision.oneLiner)}"</em></div>
       </div>
+      ${existingList ? `
       <div class="intel-field">
-        <div class="intel-label">Identified Gaps & Technical Opportunities</div>
+        <div class="intel-label">Implemented Functions & Capabilities (Detected in Code)</div>
+        <ul style="padding-left: 18px; font-size: 0.78rem; color: var(--text-secondary);">${existingList}</ul>
+      </div>
+      ` : ''}
+      <div class="intel-field">
+        <div class="intel-label">Missing Capabilities & New Feature Opportunities</div>
         <ul style="padding-left: 18px; font-size: 0.8rem; color: var(--text-muted);">${gapsList}</ul>
       </div>
     `;
@@ -1077,12 +1091,17 @@ Please inspect the current codebase, write clean and modular code fulfilling all
 
   // Action Buttons
   document.getElementById('btn-run-discovery').addEventListener('click', async () => {
-    showToast('🔬 Scanning repository codebase...');
+    showToast('🔬 Scanning active project code & generating new feature suggestions...');
     try {
       const res = await api('/api/roadmap/discovery', { method: 'POST' });
       discoveryData = res;
+      if (res && res._competitors) competitorData = res._competitors;
+      if (res && res._roadmap) roadmapData = res._roadmap;
       renderDiscoveryCard(discoveryData);
-      showToast('Project discovery complete!', 'success');
+      renderCompetitorCard(competitorData);
+      renderRoadmapBoard(roadmapData);
+      await loadRoadmapData();
+      showToast(`Code scan & roadmap complete for ${discoveryData?.projectName || currentWorkspaceName}!`, 'success');
     } catch (err) {
       showToast(`Scan failed: ${err.message}`, 'error');
     }
@@ -1140,13 +1159,36 @@ Please inspect the current codebase, write clean and modular code fulfilling all
         renderHealthScores(ideationReport.healthScores);
         renderIdeationCards(ideationReport);
       } else {
-        // Auto-run if first time
-        runIdeationAudit(false);
+        ideationReport = null;
+        resetHealthScoresUI();
+        renderIdeationCards(null);
       }
     } catch (e) {
       console.warn('Ideation load error:', e);
     }
   }
+
+  function resetHealthScoresUI() {
+    ['score-security', 'score-performance', 'score-quality', 'score-innovation'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = '--';
+        el.classList.remove('score-good', 'score-warn', 'score-danger');
+      }
+    });
+  }
+
+  resetProjectScopedState = function () {
+    roadmapData = null;
+    discoveryData = null;
+    competitorData = null;
+    ideationReport = null;
+    renderDiscoveryCard(null);
+    renderCompetitorCard(null);
+    renderRoadmapBoard(null);
+    resetHealthScoresUI();
+    renderIdeationCards(null);
+  };
 
   async function runIdeationAudit(showNotification = true) {
     if (showNotification) showToast('💡 Running deep codebase ideation scan...');

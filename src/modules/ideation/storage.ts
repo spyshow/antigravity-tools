@@ -1,61 +1,49 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
 import { IdeationReport } from './types.js';
 import { RoadmapStorage } from '../roadmap/storage.js';
 import { RoadmapFeature } from '../roadmap/types.js';
+import { getPluginWorkspaceStorageDir, normalizeWorkspacePath } from '../workspace.js';
 
 export class IdeationStorage {
-  private globalStorageDir: string;
   private roadmapStorage: RoadmapStorage;
 
   constructor(roadmapStorage?: RoadmapStorage) {
-    this.globalStorageDir = path.join(os.homedir(), '.gemini', 'antigravity-toolkit', 'ideation');
     this.roadmapStorage = roadmapStorage || new RoadmapStorage();
-    this.ensureDir(this.globalStorageDir);
   }
 
-  private ensureDir(dirPath: string): void {
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
-    }
+  private getStorageDir(workspaceDir: string = process.cwd()): string {
+    return getPluginWorkspaceStorageDir(workspaceDir);
   }
 
-  private getWorkspaceConfigDir(workspaceDir: string = process.cwd()): string {
-    const antigravityDir = path.join(workspaceDir, '.antigravity');
-    this.ensureDir(antigravityDir);
-    return antigravityDir;
+  private isLegacyProCalTainted(report: IdeationReport, workspaceDir: string): boolean {
+    const folder = path.basename(normalizeWorkspacePath(workspaceDir)).toLowerCase();
+    if (folder === 'procal') return false;
+    return report.codeImprovements?.some(i =>
+      i.title.includes('Per-Phase Balancing Optimizer') ||
+      i.affected_files?.some(f => f.includes('phaseBalance.ts'))
+    ) ?? false;
   }
 
   public async saveReport(report: IdeationReport, workspaceDir: string = process.cwd()): Promise<string> {
-    const wsDir = this.getWorkspaceConfigDir(workspaceDir);
-    const filePath = path.join(wsDir, 'ideation.json');
+    const dir = this.getStorageDir(workspaceDir);
+    const filePath = path.join(dir, 'ideation.json');
     fs.writeFileSync(filePath, JSON.stringify(report, null, 2), 'utf8');
-
-    // Also persist in global cache
-    const safeName = report.projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
-    const globalFilePath = path.join(this.globalStorageDir, `${safeName}.json`);
-    fs.writeFileSync(globalFilePath, JSON.stringify(report, null, 2), 'utf8');
-
     return filePath;
   }
 
   public async getReport(workspaceDir: string = process.cwd()): Promise<IdeationReport | null> {
-    const filePath = path.join(workspaceDir, '.antigravity', 'ideation.json');
+    const dir = this.getStorageDir(workspaceDir);
+    const filePath = path.join(dir, 'ideation.json');
     if (fs.existsSync(filePath)) {
       try {
-        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const parsed: IdeationReport = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        if (this.isLegacyProCalTainted(parsed, workspaceDir)) {
+          return null;
+        }
+        return parsed;
       } catch {}
     }
-
-    const folderName = path.basename(path.resolve(workspaceDir)).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const globalFilePath = path.join(this.globalStorageDir, `${folderName}.json`);
-    if (fs.existsSync(globalFilePath)) {
-      try {
-        return JSON.parse(fs.readFileSync(globalFilePath, 'utf8'));
-      } catch {}
-    }
-
     return null;
   }
 
@@ -75,10 +63,9 @@ export class IdeationStorage {
   }> {
     const report = await this.getReport(workspaceDir);
     if (!report) {
-      throw new Error('No active ideation report found in workspace.');
+      throw new Error('No active ideation report found for this workspace.');
     }
 
-    // Find the item across all 4 categories
     const ci = report.codeImprovements.find(i => i.id === ideaId);
     const perf = report.performanceOptimizations.find(i => i.id === ideaId);
     const sec = report.securityVulnerabilities.find(i => i.id === ideaId);
@@ -94,7 +81,6 @@ export class IdeationStorage {
       throw new Error('No active roadmap found to promote into. Please generate a roadmap first.');
     }
 
-    // Map to RoadmapFeature
     const newFeatureId = `FEAT-IDEATION-${item.id.toUpperCase()}`;
     if (roadmap.features.some(f => f.id === newFeatureId)) {
       return {
@@ -144,7 +130,6 @@ export class IdeationStorage {
 
     await this.roadmapStorage.saveRoadmap(roadmap, workspaceDir);
 
-    // Update item status in ideation report
     item.status = 'promoted_to_roadmap';
     await this.saveReport(report, workspaceDir);
 

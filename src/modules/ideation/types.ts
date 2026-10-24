@@ -94,5 +94,6 @@ export interface IdeationReport {
     linesOfCodeEstimated: number;
     generatedAt: string;
     scannedPaths: string[];
+    generatedBy?: string;
   };
 }

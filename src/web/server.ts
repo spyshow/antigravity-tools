@@ -12,6 +12,8 @@ import {
   getConversationMetadata,
   resolveWorkspaceFromConversation
 } from '../modules/workspace.js';
+import { describeAISettings, saveAISettings } from '../modules/ai/settings.js';
+import { execAgentApi } from '../modules/ai/antigravity-agent.js';
 
 export class WebDashboardServer {
   private server: http.Server | null = null;
@@ -172,6 +174,36 @@ export class WebDashboardServer {
           return;
         }
 
+        // Bridge: /_sidecar/send-message
+        if (url.pathname === '/_sidecar/send-message' && method === 'POST') {
+          const body = await parseBody();
+          const convId = body.conversationId || url.searchParams.get('conversationId');
+          const args = ['send-message'];
+          if (convId) args.push('--conversation-id', String(convId));
+          if (body.wait) args.push('--wait');
+          if (typeof body.message === 'string') args.push(body.message);
+          const resp = await execAgentApi(args);
+          sendJson(200, resp || { error: 'agentapi unavailable' });
+          return;
+        }
+
+        // Bridge: /_sidecar/new-conversation
+        if (url.pathname === '/_sidecar/new-conversation' && method === 'POST') {
+          const body = await parseBody();
+          const args = ['new-conversation'];
+          if (Array.isArray(body.workspaces)) {
+            for (const ws of body.workspaces) {
+              if (ws) args.push('--workspace', String(ws));
+            }
+          }
+          if (body.wait) args.push('--wait');
+          if (body.agentMode) args.push('--agent-mode', String(body.agentMode));
+          if (typeof body.message === 'string') args.push(body.message);
+          const resp = await execAgentApi(args);
+          sendJson(200, resp || { error: 'agentapi unavailable' });
+          return;
+        }
+
         // Workspace management endpoints
         if (url.pathname === '/api/workspace') {
           if (method === 'GET') {
@@ -203,6 +235,20 @@ export class WebDashboardServer {
               workspace: current,
               name: path.basename(current)
             });
+            return;
+          }
+        }
+
+        // AI settings endpoint (Gemini API key & model)
+        if (url.pathname === '/api/ai/settings') {
+          if (method === 'GET') {
+            sendJson(200, describeAISettings());
+            return;
+          }
+          if (method === 'POST') {
+            const body = await parseBody();
+            saveAISettings(body);
+            sendJson(200, describeAISettings());
             return;
           }
         }

@@ -1,96 +1,87 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
 import { ProjectDiscovery, CompetitorAnalysis, RoadmapDocument, RoadmapFeature } from './types.js';
+import { getPluginWorkspaceStorageDir, normalizeWorkspacePath } from '../workspace.js';
 
 export class RoadmapStorage {
-  private globalStorageDir: string;
-
-  constructor() {
-    this.globalStorageDir = path.join(os.homedir(), '.gemini', 'antigravity-toolkit', 'roadmaps');
-    this.ensureDir(this.globalStorageDir);
+  private getStorageDir(workspaceDir: string = process.cwd()): string {
+    return getPluginWorkspaceStorageDir(workspaceDir);
   }
 
-  private ensureDir(dirPath: string): void {
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
-    }
-  }
-
-  private getWorkspaceConfigDir(workspaceDir: string = process.cwd()): string {
-    const antigravityDir = path.join(workspaceDir, '.antigravity');
-    this.ensureDir(antigravityDir);
-    return antigravityDir;
+  private isLegacyProCalTainted(roadmap: RoadmapDocument, workspaceDir: string): boolean {
+    const folder = path.basename(normalizeWorkspacePath(workspaceDir)).toLowerCase();
+    if (folder === 'procal') return false;
+    return roadmap.features?.some(f =>
+      f.title.includes('IEC 60364 & NEC / NEMA') ||
+      f.title.includes('Apartment Room Templates') ||
+      f.title.includes('Single-Line Diagram (SLD)')
+    ) ?? false;
   }
 
   public async saveRoadmap(roadmap: RoadmapDocument, workspaceDir: string = process.cwd()): Promise<string> {
     roadmap.metadata.updatedAt = new Date().toISOString();
-
-    // 1. Save to workspace .antigravity/roadmap.json
-    const wsDir = this.getWorkspaceConfigDir(workspaceDir);
-    const wsFilePath = path.join(wsDir, 'roadmap.json');
-    fs.writeFileSync(wsFilePath, JSON.stringify(roadmap, null, 2), 'utf8');
-
-    // 2. Also save to global cache for easy multi-project retrieval
-    const safeName = roadmap.projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
-    const globalFilePath = path.join(this.globalStorageDir, `${safeName}.json`);
-    fs.writeFileSync(globalFilePath, JSON.stringify(roadmap, null, 2), 'utf8');
-
-    return wsFilePath;
+    const dir = this.getStorageDir(workspaceDir);
+    const filePath = path.join(dir, 'roadmap.json');
+    fs.writeFileSync(filePath, JSON.stringify(roadmap, null, 2), 'utf8');
+    return filePath;
   }
 
   public async getRoadmap(workspaceDir: string = process.cwd()): Promise<RoadmapDocument | null> {
-    // 1. Try workspace .antigravity/roadmap.json
-    const wsFilePath = path.join(workspaceDir, '.antigravity', 'roadmap.json');
-    if (fs.existsSync(wsFilePath)) {
+    const dir = this.getStorageDir(workspaceDir);
+    const filePath = path.join(dir, 'roadmap.json');
+    if (fs.existsSync(filePath)) {
       try {
-        const raw = fs.readFileSync(wsFilePath, 'utf8');
-        return JSON.parse(raw);
+        const parsed: RoadmapDocument = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        if (this.isLegacyProCalTainted(parsed, workspaceDir)) {
+          return null;
+        }
+        return parsed;
       } catch {}
     }
-
-    // 2. Try global cache matching directory name
-    const folderName = path.basename(path.resolve(workspaceDir)).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const globalFilePath = path.join(this.globalStorageDir, `${folderName}.json`);
-    if (fs.existsSync(globalFilePath)) {
-      try {
-        const raw = fs.readFileSync(globalFilePath, 'utf8');
-        return JSON.parse(raw);
-      } catch {}
-    }
-
     return null;
   }
 
   public async saveDiscovery(discovery: ProjectDiscovery, workspaceDir: string = process.cwd()): Promise<string> {
-    const wsDir = this.getWorkspaceConfigDir(workspaceDir);
-    const filePath = path.join(wsDir, 'discovery.json');
+    const dir = this.getStorageDir(workspaceDir);
+    const filePath = path.join(dir, 'discovery.json');
     fs.writeFileSync(filePath, JSON.stringify(discovery, null, 2), 'utf8');
     return filePath;
   }
 
   public async getDiscovery(workspaceDir: string = process.cwd()): Promise<ProjectDiscovery | null> {
-    const filePath = path.join(workspaceDir, '.antigravity', 'discovery.json');
+    const dir = this.getStorageDir(workspaceDir);
+    const filePath = path.join(dir, 'discovery.json');
     if (fs.existsSync(filePath)) {
       try {
-        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const parsed: ProjectDiscovery = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const folder = path.basename(normalizeWorkspacePath(workspaceDir)).toLowerCase();
+        if (folder !== 'procal' && parsed.productVision?.valueProposition?.includes('single-line diagram generation')) {
+          return null;
+        }
+        return parsed;
       } catch {}
     }
     return null;
   }
 
   public async saveCompetitorAnalysis(analysis: CompetitorAnalysis, workspaceDir: string = process.cwd()): Promise<string> {
-    const wsDir = this.getWorkspaceConfigDir(workspaceDir);
-    const filePath = path.join(wsDir, 'competitors.json');
+    const dir = this.getStorageDir(workspaceDir);
+    const filePath = path.join(dir, 'competitors.json');
     fs.writeFileSync(filePath, JSON.stringify(analysis, null, 2), 'utf8');
     return filePath;
   }
 
   public async getCompetitorAnalysis(workspaceDir: string = process.cwd()): Promise<CompetitorAnalysis | null> {
-    const filePath = path.join(workspaceDir, '.antigravity', 'competitors.json');
+    const dir = this.getStorageDir(workspaceDir);
+    const filePath = path.join(dir, 'competitors.json');
     if (fs.existsSync(filePath)) {
       try {
-        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const parsed: CompetitorAnalysis = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const folder = path.basename(normalizeWorkspacePath(workspaceDir)).toLowerCase();
+        if (folder !== 'procal' && parsed.competitors?.some(c => c.id === 'COMP-CANECO')) {
+          return null;
+        }
+        return parsed;
       } catch {}
     }
     return null;
@@ -113,7 +104,6 @@ export class RoadmapStorage {
 
     feature.status = status;
 
-    // Recalculate phase statuses
     for (const phase of roadmap.phases) {
       const phaseFeats = roadmap.features.filter(f => f.phaseId === phase.id);
       const allDone = phaseFeats.length > 0 && phaseFeats.every(f => f.status === 'completed');

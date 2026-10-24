@@ -5,6 +5,7 @@ import { RoadmapGenerator } from './generator.js';
 import { RoadmapStorage } from './storage.js';
 import { createRoadmapTools, createRoadmapToolHandler } from './tools.js';
 import { normalizeWorkspacePath, getActiveWorkspace } from '../workspace.js';
+import { runRoadmapPipeline } from './pipeline.js';
 
 export class RoadmapModule implements PluginModule {
   public readonly id = 'roadmap';
@@ -101,13 +102,23 @@ export class RoadmapModule implements PluginModule {
         return true;
       }
 
-      // POST /api/roadmap/discovery
+      // POST /api/roadmap/discovery — scans code, extracts implemented functions/capabilities, and synthesizes new missing features
       if (pathname === '/api/roadmap/discovery' && method === 'POST') {
         const body = await parseBody();
         const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
-        const discovery = await this.analyzer.analyzeWorkspace(targetPath);
-        await this.storage.saveDiscovery(discovery, targetPath);
-        sendJson(200, discovery);
+        const result = await runRoadmapPipeline(targetPath, {
+          analyzer: this.analyzer,
+          competitorService: this.competitorService,
+          generator: this.generator,
+          storage: this.storage
+        });
+        sendJson(200, {
+          ...result.discovery,
+          _competitors: result.competitors,
+          _roadmap: result.roadmap,
+          _mode: result.mode,
+          _workspace: targetPath
+        });
         return true;
       }
 
@@ -126,23 +137,17 @@ export class RoadmapModule implements PluginModule {
         return true;
       }
 
-      // POST /api/roadmap/generate
+      // POST /api/roadmap/generate — always re-reads the CURRENT workspace from scratch
       if (pathname === '/api/roadmap/generate' && method === 'POST') {
         const body = await parseBody();
         const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
-        let discovery = await this.storage.getDiscovery(targetPath);
-        if (!discovery) {
-          discovery = await this.analyzer.analyzeWorkspace(targetPath);
-          await this.storage.saveDiscovery(discovery, targetPath);
-        }
-        let competitors = await this.storage.getCompetitorAnalysis(targetPath);
-        if (!competitors) {
-          competitors = await this.competitorService.analyzeCompetitors(discovery);
-          await this.storage.saveCompetitorAnalysis(competitors, targetPath);
-        }
-        const roadmap = this.generator.generateRoadmap(discovery, competitors);
-        await this.storage.saveRoadmap(roadmap, targetPath);
-        sendJson(200, roadmap);
+        const result = await runRoadmapPipeline(targetPath, {
+          analyzer: this.analyzer,
+          competitorService: this.competitorService,
+          generator: this.generator,
+          storage: this.storage
+        });
+        sendJson(200, { ...result.roadmap, _mode: result.mode, _workspace: targetPath });
         return true;
       }
 

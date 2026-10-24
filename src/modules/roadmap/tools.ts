@@ -4,6 +4,9 @@ import { CompetitorService } from './competitor-service.js';
 import { RoadmapGenerator } from './generator.js';
 import { RoadmapStorage } from './storage.js';
 import { normalizeWorkspacePath, getActiveWorkspace } from '../workspace.js';
+import { runRoadmapPipeline } from './pipeline.js';
+import { normalizeRoadmapPayload } from '../ai/ai-roadmap.js';
+import * as path from 'path';
 
 export function createRoadmapTools(): MCPToolDefinition[] {
   return [
@@ -98,6 +101,24 @@ export function createRoadmapTools(): MCPToolDefinition[] {
           }
         }
       }
+    },
+    {
+      name: 'roadmap_save_generated',
+      description: 'Save an AI-authored ProjectDiscovery, CompetitorAnalysis, and RoadmapDocument (with new unimplemented features) for the specified workspace.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          workspacePath: {
+            type: 'string',
+            description: 'Workspace root directory.'
+          },
+          payload: {
+            type: 'object',
+            description: 'Object containing { discovery, competitors, roadmap }.'
+          }
+        },
+        required: ['payload']
+      }
     }
   ];
 }
@@ -145,28 +166,17 @@ export function createRoadmapToolHandler(
         }
 
         case 'roadmap_generate': {
-          let discovery = await storage.getDiscovery(wsPath);
-          if (!discovery) {
-            discovery = await analyzer.analyzeWorkspace(wsPath);
-            await storage.saveDiscovery(discovery, wsPath);
-          }
-
-          let compAnalysis = await storage.getCompetitorAnalysis(wsPath);
-          if (!compAnalysis) {
-            compAnalysis = await competitorService.analyzeCompetitors(discovery);
-            await storage.saveCompetitorAnalysis(compAnalysis, wsPath);
-          }
-
-          const roadmap = generator.generateRoadmap(discovery, compAnalysis);
-          if (args.saveToWorkspace !== false) {
-            await storage.saveRoadmap(roadmap, wsPath);
-          }
+          const { roadmap, mode } = await runRoadmapPipeline(
+            wsPath,
+            { analyzer, competitorService, generator, storage },
+            { save: args.saveToWorkspace !== false }
+          );
 
           return {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(roadmap, null, 2)
+                text: `Mode: ${mode === 'ai' ? 'AI (code-aware Gemini analysis)' : 'offline heuristic (no Gemini key configured — call project_get_context and roadmap_save_generated to let the agent author a code-aware roadmap)'}\n` + JSON.stringify(roadmap, null, 2)
               }
             ]
           };
@@ -230,6 +240,26 @@ export function createRoadmapToolHandler(
               {
                 type: 'text',
                 text: `Successfully generated and saved ROADMAP.md to: ${savedPath}\n\n${mdContent.slice(0, 500)}...`
+              }
+            ]
+          };
+        }
+
+        case 'roadmap_save_generated': {
+          const normalized = normalizeRoadmapPayload(
+            args.payload || args,
+            wsPath,
+            path.basename(wsPath),
+            'Antigravity AI Agent (Code-Aware)'
+          );
+          await storage.saveDiscovery(normalized.discovery, wsPath);
+          await storage.saveCompetitorAnalysis(normalized.competitors, wsPath);
+          await storage.saveRoadmap(normalized.roadmap, wsPath);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `Saved AI-generated roadmap (${normalized.roadmap.features.length} features) for ${normalized.roadmap.projectName}.`
               }
             ]
           };

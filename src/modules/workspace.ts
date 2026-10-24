@@ -1,6 +1,8 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { exec } from 'child_process';
+import * as os from 'os';
+import * as crypto from 'crypto';
+import { execFile } from 'child_process';
 import { fileURLToPath } from 'url';
 
 let activeWorkspace: string = process.cwd();
@@ -46,7 +48,22 @@ export function setActiveWorkspace(newPath: string): string {
   return activeWorkspace;
 }
 
-const metadataCache = new Map<string, any>();
+/**
+ * Returns a dedicated storage directory inside the plugin's own global data folder
+ * (~/.gemini/antigravity-toolkit/workspaces/<slug>-<hash>) for the given project path.
+ * This ensures the plugin NEVER creates or modifies files inside the user's project directory.
+ */
+export function getPluginWorkspaceStorageDir(workspaceDir: string = activeWorkspace): string {
+  const normalized = normalizeWorkspacePath(workspaceDir);
+  const normalizedLower = process.platform === 'win32' ? normalized.toLowerCase() : normalized;
+  const hash = crypto.createHash('sha1').update(normalizedLower).digest('hex').slice(0, 10);
+  const slug = path.basename(normalized).replace(/[^a-zA-Z0-9_-]/g, '_') || 'workspace';
+  const dir = path.join(os.homedir(), '.gemini', 'antigravity-toolkit', 'workspaces', `${slug}_${hash}`);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  return dir;
+}
 
 export async function getConversationMetadata(conversationId: string): Promise<any> {
   const convId = conversationId?.trim();
@@ -54,12 +71,12 @@ export async function getConversationMetadata(conversationId: string): Promise<a
     return null;
   }
 
-  if (metadataCache.has(convId)) {
-    return metadataCache.get(convId);
-  }
-
   return new Promise((resolve) => {
-    exec(`agentapi get-conversation-metadata ${convId}`, { timeout: 8000 }, (err, stdout) => {
+    const exe = process.env.ANTIGRAVITY_AGENTAPI_EXE;
+    const file = exe || 'agentapi';
+    const args = exe ? ['agentapi', 'get-conversation-metadata', convId] : ['get-conversation-metadata', convId];
+
+    execFile(file, args, { timeout: 8000, env: process.env }, (err, stdout) => {
       if (err || !stdout) {
         resolve(null);
         return;
@@ -67,9 +84,7 @@ export async function getConversationMetadata(conversationId: string): Promise<a
 
       try {
         const data = JSON.parse(stdout);
-        metadataCache.set(convId, data);
-
-        const meta = data?.response?.conversationMetadata?.metadata;
+        const meta = data?.response?.conversationMetadata?.metadata || data?.response?.conversation_metadata?.metadata;
         const uris = meta?.workspaceUris || [];
         const workspaces = meta?.workspaces || [];
 
@@ -97,7 +112,7 @@ export async function resolveWorkspaceFromConversation(conversationId: string): 
   const data = await getConversationMetadata(conversationId);
   if (!data) return null;
 
-  const meta = data?.response?.conversationMetadata?.metadata;
+  const meta = data?.response?.conversationMetadata?.metadata || data?.response?.conversation_metadata?.metadata;
   const uris = meta?.workspaceUris || [];
   const workspaces = meta?.workspaces || [];
 

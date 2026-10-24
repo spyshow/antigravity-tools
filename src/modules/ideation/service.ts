@@ -7,6 +7,11 @@ import {
   CodeQualityItem,
   HealthScores
 } from './types.js';
+import { buildProjectContext } from '../ai/context-builder.js';
+import { generateAIIdeation } from '../ai/ai-ideation.js';
+import { isAIConfigured, loadAISettings } from '../ai/settings.js';
+import { analyzeProjectCodebase, synthesizeCodeAwareIdeation } from '../ai/code-comprehension.js';
+import { triggerBackgroundAntigravityAnalysis } from '../ai/antigravity-agent.js';
 
 export class IdeationService {
   private scanner: CodeScanner;
@@ -15,9 +20,50 @@ export class IdeationService {
     this.scanner = scanner || new CodeScanner();
   }
 
+  /**
+   * Code-aware AI ideation: reads the project's docs + real source code and asks Gemini
+   * for findings grounded in THIS codebase. Throws AINotConfiguredError when no key is set.
+   */
+  public async generateReportAI(workspaceDir: string = process.cwd()): Promise<IdeationReport> {
+    const ctx = buildProjectContext(workspaceDir);
+    const partial = await generateAIIdeation(ctx, loadAISettings().model);
+    return this.finalizeReport(partial);
+  }
+
+  /** Attaches health scores to an AI/agent-produced ideation payload. */
+  public finalizeReport(partial: Omit<IdeationReport, 'healthScores'>): IdeationReport {
+    return {
+      ...partial,
+      healthScores: this.calculateHealthScores(
+        partial.securityVulnerabilities,
+        partial.performanceOptimizations,
+        partial.codeQualityIssues,
+        partial.codeImprovements
+      )
+    };
+  }
+
+  /**
+   * Generates the report with AI when configured, otherwise runs deep code comprehension
+   * and triggers a background Antigravity agent analysis when available.
+   */
+  public async generateBestReport(workspaceDir: string = process.cwd()): Promise<IdeationReport> {
+    if (isAIConfigured()) {
+      return this.generateReportAI(workspaceDir);
+    }
+    triggerBackgroundAntigravityAnalysis({ workspacePath: workspaceDir, taskType: 'ideation' }).catch(() => {});
+    return this.generateReport(workspaceDir);
+  }
+
   public async generateReport(workspaceDir: string = process.cwd()): Promise<IdeationReport> {
     const scan = await this.scanner.scanCodebase(workspaceDir);
     const domain = this.detectDomain(scan);
+
+    if (domain === 'generic') {
+      const deepAnalysis = analyzeProjectCodebase(workspaceDir);
+      const partial = synthesizeCodeAwareIdeation(deepAnalysis);
+      return this.finalizeReport(partial);
+    }
 
     const codeImprovements = this.generateCodeImprovements(scan, domain);
     const performanceOptimizations = this.generatePerformanceOptimizations(scan, domain);
@@ -55,41 +101,19 @@ export class IdeationService {
         filesScanned: scan.totalFiles,
         linesOfCodeEstimated: scan.totalLines,
         generatedAt: new Date().toISOString(),
-        scannedPaths
+        scannedPaths,
+        generatedBy: 'Offline static scanner (heuristic — add a Gemini key for code-aware AI analysis)'
       }
     };
   }
 
   private detectDomain(scan: CodebaseScanResult): 'electrical-cad' | 'devtools-ai' | 'generic' {
-    const text = (
-      scan.projectName + ' ' +
-      scan.files.map(f => f.relativePath).join(' ') + ' ' +
-      Object.keys(scan.packageDependencies).join(' ')
-    ).toLowerCase();
-
-    if (
-      text.includes('procal') ||
-      text.includes('phasebalance') ||
-      text.includes('breaker') ||
-      text.includes('cable-schedule') ||
-      text.includes('iec 60364') ||
-      text.includes('voltage drop') ||
-      text.includes('transformer') ||
-      (text.includes('sld') && text.includes('panel'))
-    ) {
-      return 'electrical-cad';
-    }
-
-    if (
-      text.includes('antigravity') ||
-      text.includes('prompt') ||
-      text.includes('roadmap') ||
-      text.includes('ideation') ||
-      text.includes('subagent')
-    ) {
-      return 'devtools-ai';
-    }
-
+    // The curated template sets below were written for two specific codebases (ProCal and
+    // Antigravity Tools itself). Only use them for those exact projects; every other project
+    // gets findings derived from its own static scan.
+    const name = scan.projectName.toLowerCase();
+    if (name === 'procal') return 'electrical-cad';
+    if (name === 'antigravity-tools' || name === 'antigravity tools') return 'devtools-ai';
     return 'generic';
   }
 
@@ -736,7 +760,7 @@ export class IdeationService {
     ];
   }
 
-  private calculateHealthScores(
+  public calculateHealthScores(
     vulns: SecurityVulnerability[],
     perf: PerformanceOptimization[],
     cq: CodeQualityItem[],
