@@ -67,6 +67,17 @@ describe('Workspace Switcher & Multi-Project Isolation', () => {
     assert.ok(body.includes('workspace-change') || body.includes('getWorkspaceUris'));
   });
 
+  it('copies text via POST /api/clipboard for sandboxed sidecar iframes', async () => {
+    const res = await fetch(`http://localhost:${serverPort}/api/clipboard`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: 'Antigravity clipboard test' })
+    });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json() as any;
+    assert.strictEqual(data.success, true);
+  });
+
   it('exposes GET and POST /api/workspace for dynamic project switching', async () => {
     // 1. Post to switch to tempDir1
     const postRes = await fetch(`http://localhost:${serverPort}/api/workspace`, {
@@ -174,6 +185,13 @@ describe('Workspace Switcher & Multi-Project Isolation', () => {
       fs.existsSync(path.join(tempDir2, '.antigravity')),
       false,
       'Target project must remain 100% untouched (.antigravity stored only in plugin global directory)'
+    );
+
+    // 5. Verify scan ran in background worker_threads without spawning a sidebar conversation
+    assert.strictEqual(
+      Boolean(discovery._agentTriggered),
+      false,
+      'Must not spawn visible sidebar conversations via agentapi new-conversation'
     );
   });
 });

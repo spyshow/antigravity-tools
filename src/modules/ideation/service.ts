@@ -11,7 +11,7 @@ import { buildProjectContext } from '../ai/context-builder.js';
 import { generateAIIdeation } from '../ai/ai-ideation.js';
 import { isAIConfigured, loadAISettings } from '../ai/settings.js';
 import { analyzeProjectCodebase, synthesizeCodeAwareIdeation } from '../ai/code-comprehension.js';
-import { triggerBackgroundAntigravityAnalysis } from '../ai/antigravity-agent.js';
+import { runScanInWorker } from '../ai/antigravity-agent.js';
 
 export class IdeationService {
   private scanner: CodeScanner;
@@ -44,15 +44,22 @@ export class IdeationService {
   }
 
   /**
-   * Generates the report with AI when configured, otherwise runs deep code comprehension
-   * and triggers a background Antigravity agent analysis when available.
+   * Generates the report inside a non-blocking Node.js worker_threads background worker
+   * (using Gemini when configured or the Deep Code Comprehension engine otherwise),
+   * without spawning visible conversations in the Antigravity sidebar.
    */
   public async generateBestReport(workspaceDir: string = process.cwd()): Promise<IdeationReport> {
-    if (isAIConfigured()) {
-      return this.generateReportAI(workspaceDir);
+    try {
+      return await runScanInWorker<IdeationReport>({
+        workspacePath: workspaceDir,
+        taskType: 'ideation'
+      });
+    } catch {
+      if (isAIConfigured()) {
+        return this.generateReportAI(workspaceDir);
+      }
+      return this.generateReport(workspaceDir);
     }
-    triggerBackgroundAntigravityAnalysis({ workspacePath: workspaceDir, taskType: 'ideation' }).catch(() => {});
-    return this.generateReport(workspaceDir);
   }
 
   public async generateReport(workspaceDir: string = process.cwd()): Promise<IdeationReport> {

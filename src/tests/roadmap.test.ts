@@ -103,6 +103,16 @@ test('RoadmapStorage persists, updates feature status, and exports ROADMAP.md', 
   const readMd = fs.readFileSync(mdPath, 'utf8');
   assert.ok(readMd.includes('[FEAT-06]'));
 
+  // Delete a single feature
+  const afterDelete = await storage.deleteFeature('FEAT-06', tmpDir);
+  assert.ok(!afterDelete.features.some(f => f.id === 'FEAT-06'), 'Deleted feature should be removed from features');
+  assert.ok(!afterDelete.phases.some(p => p.features.includes('FEAT-06')), 'Deleted feature should be removed from phase feature lists');
+
+  // Clear entire roadmap data
+  await storage.clearRoadmapData(tmpDir);
+  const afterClear = await storage.getRoadmap(tmpDir);
+  assert.strictEqual(afterClear, null);
+
   // Clean up
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });

@@ -139,4 +139,46 @@ export class IdeationStorage {
       message: `Successfully promoted [${item.id}] to Roadmap as [${newFeatureId}] in ${phaseId}!`
     };
   }
+
+  public async deleteIdea(ideaId: string, workspaceDir: string = process.cwd()): Promise<IdeationReport> {
+    const report = await this.getReport(workspaceDir);
+    if (!report) {
+      throw new Error('No active ideation report found for this workspace.');
+    }
+
+    const totalBefore =
+      report.codeImprovements.length +
+      report.performanceOptimizations.length +
+      report.securityVulnerabilities.length +
+      report.codeQualityIssues.length;
+
+    report.codeImprovements = report.codeImprovements.filter(i => i.id !== ideaId);
+    report.performanceOptimizations = report.performanceOptimizations.filter(i => i.id !== ideaId);
+    report.securityVulnerabilities = report.securityVulnerabilities.filter(i => i.id !== ideaId);
+    report.codeQualityIssues = report.codeQualityIssues.filter(i => i.id !== ideaId);
+
+    const totalAfter =
+      report.codeImprovements.length +
+      report.performanceOptimizations.length +
+      report.securityVulnerabilities.length +
+      report.codeQualityIssues.length;
+
+    if (totalAfter === totalBefore) {
+      throw new Error(`Ideation item with ID "${ideaId}" not found in report.`);
+    }
+
+    report.metadata.generatedAt = new Date().toISOString();
+    await this.saveReport(report, workspaceDir);
+    return report;
+  }
+
+  public async clearReport(workspaceDir: string = process.cwd()): Promise<void> {
+    const dir = this.getStorageDir(workspaceDir);
+    const filePath = path.join(dir, 'ideation.json');
+    if (fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+      } catch {}
+    }
+  }
 }

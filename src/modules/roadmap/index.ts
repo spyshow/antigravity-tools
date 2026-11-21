@@ -160,6 +160,24 @@ export class RoadmapModule implements PluginModule {
         return true;
       }
 
+      // POST /api/roadmap/feature/delete
+      if (pathname === '/api/roadmap/feature/delete' && method === 'POST') {
+        const body = await parseBody();
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
+        const updatedRoadmap = await this.storage.deleteFeature(body.featureId, targetPath);
+        sendJson(200, updatedRoadmap);
+        return true;
+      }
+
+      // POST /api/roadmap/clear or DELETE /api/roadmap
+      if ((pathname === '/api/roadmap/clear' && method === 'POST') || (pathname === '/api/roadmap' && method === 'DELETE')) {
+        const body = method === 'POST' ? await parseBody() : {};
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
+        await this.storage.clearRoadmapData(targetPath);
+        sendJson(200, { success: true, workspace: targetPath });
+        return true;
+      }
+
       // POST /api/roadmap/export
       if (pathname === '/api/roadmap/export' && method === 'POST') {
         const body = await parseBody();

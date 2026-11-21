@@ -121,6 +121,53 @@ export class RoadmapStorage {
     return roadmap;
   }
 
+  public async deleteFeature(
+    featureId: string,
+    workspaceDir: string = process.cwd()
+  ): Promise<RoadmapDocument> {
+    const roadmap = await this.getRoadmap(workspaceDir);
+    if (!roadmap) {
+      throw new Error('No active roadmap found.');
+    }
+
+    const beforeLen = roadmap.features.length;
+    roadmap.features = roadmap.features.filter(f => f.id !== featureId);
+    if (roadmap.features.length === beforeLen) {
+      throw new Error(`Feature with id "${featureId}" not found in roadmap.`);
+    }
+
+    for (const phase of roadmap.phases) {
+      if (Array.isArray(phase.features)) {
+        phase.features = phase.features.filter(id => id !== featureId);
+      }
+      const phaseFeats = roadmap.features.filter(f => f.phaseId === phase.id);
+      const allDone = phaseFeats.length > 0 && phaseFeats.every(f => f.status === 'completed');
+      const anyProgress = phaseFeats.some(f => f.status === 'in_progress' || f.status === 'completed');
+      if (allDone) {
+        phase.status = 'completed';
+      } else if (anyProgress) {
+        phase.status = 'in_progress';
+      } else {
+        phase.status = 'planned';
+      }
+    }
+
+    await this.saveRoadmap(roadmap, workspaceDir);
+    return roadmap;
+  }
+
+  public async clearRoadmapData(workspaceDir: string = process.cwd()): Promise<void> {
+    const dir = this.getStorageDir(workspaceDir);
+    for (const file of ['roadmap.json', 'discovery.json', 'competitors.json']) {
+      const p = path.join(dir, file);
+      if (fs.existsSync(p)) {
+        try {
+          fs.unlinkSync(p);
+        } catch {}
+      }
+    }
+  }
+
   public async exportMarkdownFile(content: string, workspaceDir: string = process.cwd()): Promise<string> {
     const targetPath = path.join(workspaceDir, 'ROADMAP.md');
     fs.writeFileSync(targetPath, content, 'utf8');

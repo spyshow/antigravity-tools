@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity Tools</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+  <div class="app-container">
+    <!-- 1. Top Brand Header (Logo & Tool Name) -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="logo-badge" title="Antigravity Tools">
+          <svg width="22" height="22" viewBox="0 0 256 256" fill="none">
+            <defs>
+              <linearGradient id="brandGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#2563eb"/>
+              </linearGradient>
+              <linearGradient id="brandGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#818cf8"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+              <linearGradient id="brandGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#c084fc"/>
+                <stop offset="100%" stop-color="#9333ea"/>
+              </linearGradient>
+            </defs>
+            <rect width="256" height="256" rx="56" fill="#0d1117"/>
+            <polygon points="128,38 174,106 128,92 82,106" fill="url(#brandGrad1)"/>
+            <polygon points="74,122 122,108 122,196 46,218" fill="url(#brandGrad2)"/>
+            <polygon points="182,122 210,218 134,196 134,108" fill="url(#brandGrad3)"/>
+          </svg>
+        </div>
+        <h1 class="header-title">Antigravity Tools</h1>
+      </div>
+    </header>
+
+    <!-- 2. Main Navigation Menu Tabs -->
+    <nav class="app-nav-tabs">
+      <button class="nav-tab active" id="tab-btn-prompts" title="Prompt Library">
+        <span class="tab-icon">📚</span>
+        <span class="tab-label">Prompts</span>
+      </button>
+      <button class="nav-tab" id="tab-btn-roadmap" title="AI Strategic Roadmap">
+        <span class="tab-icon">🗺️</span>
+        <span class="tab-label">Roadmap</span>
+      </button>
+      <button class="nav-tab" id="tab-btn-ideation" title="Codebase Ideation & Audits">
+        <span class="tab-icon">💡</span>
+        <span class="tab-label">Ideation</span>
+      </button>
+      <button class="nav-tab" id="tab-btn-agency" title="Agency Agents Multi-Agent Ecosystem">
+        <span class="tab-icon">🤖</span>
+        <span class="tab-label">Agency</span>
+      </button>
+    </nav>
+
+    <!-- 3. Actions Row on a New Line Under the Main Menu -->
+    <div class="header-actions prompt-actions-bar" id="prompt-header-actions">
+      <button id="btn-export" class="btn btn-xs btn-secondary" title="Export library to JSON">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span class="action-label">Export</span>
+      </button>
+      <button id="btn-import" class="btn btn-xs btn-secondary" title="Import prompts from JSON">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <span class="action-label">Import</span>
+      </button>
+      <button id="btn-new-prompt" class="btn btn-xs btn-primary" title="Create new prompt template">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>+ New Prompt</span>
+      </button>
+    </div>
+
+    <!-- Global Active Workspace Bar -->
+    <div class="workspace-banner" id="workspace-banner">
+      <div class="workspace-info">
+        <span class="workspace-badge">📁 Project</span>
+        <span class="workspace-current-name" id="global-ws-name">Detecting...</span>
+        <span class="workspace-current-path" id="global-ws-path" title="Active Project Directory">...</span>
+      </div>
+      <div class="workspace-actions">
+        <button id="btn-detect-ws" class="btn btn-xs btn-secondary" title="Re-sync active project from Antigravity">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Sync
+        </button>
+        <button id="btn-switch-ws" class="btn btn-xs btn-secondary" title="Change target workspace folder">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Change
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: PROMPT LIBRARY -->
+    <section id="view-prompts" class="view-panel">
+      <!-- Controls Bar -->
+      <div class="controls-bar">
+        <!-- Search Input -->
+        <div class="search-wrapper">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="search-input" placeholder="Search prompts... (Ctrl+K)" autocomplete="off">
+          <button id="search-clear" class="btn-clear hidden">&times;</button>
+        </div>
+
+        <!-- Quick Filter Pills -->
+        <div class="filter-pills" id="category-pills">
+          <button class="pill active" data-category="ALL">All Prompts</button>
+          <button class="pill" data-favorite="true">⭐ Favorites</button>
+        </div>
+      </div>
+
+      <!-- Active Filter Tags row -->
+      <div class="tags-bar hidden" id="tags-bar">
+        <span class="tags-label">Tags:</span>
+        <div class="tags-container" id="tags-container"></div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="stats-row">
+        <span id="prompt-count-text">Loading prompt library...</span>
+        <span class="clipboard-tip">💡 Clicking <b>Paste</b> automatically renders variables & copies straight to your system clipboard!</span>
+      </div>
+
+      <!-- Main Prompts Grid -->
+      <main class="prompts-grid" id="prompts-grid">
+        <!-- Injected via JavaScript -->
+      </main>
+
+      <!-- Empty State -->
+      <div class="empty-state hidden" id="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <h3>No prompts found</h3>
+        <p>Try refining your search query or category filters, or create a new prompt.</p>
+        <button class="btn btn-primary" id="btn-empty-create">Create Prompt</button>
+      </div>
+    </section>
+
+    <!-- VIEW 2: AI ROADMAP & COMPETITOR INTELLIGENCE -->
+    <section id="view-roadmap" class="view-panel hidden">
+      <!-- Compact Roadmap Toolbar -->
+      <div class="roadmap-toolbar">
+        <div class="toolbar-primary-row">
+          <button id="btn-run-generate" class="btn btn-primary btn-generate-main" title="Synthesize into phased MoSCoW roadmap">
+            ⚡ Generate Roadmap
+          </button>
+          <div class="roadmap-sub-actions">
+            <button id="btn-run-discovery" class="btn btn-xs btn-secondary" title="Deep codebase scan for tech stack, personas, & vision">
+              🔬 Scan
+            </button>
+            <button id="btn-run-competitors" class="btn btn-xs btn-secondary" title="Identify competitors & market gaps">
+              🥊 Rivals
+            </button>
+            <button id="btn-export-markdown" class="btn btn-xs btn-secondary" title="Export publication-ready ROADMAP.md to project root">
+              📄 Export
+            </button>
+            <button id="btn-clear-roadmap" class="btn btn-xs btn-danger" title="Delete roadmap & discovery data for this project">
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+        <div class="toolbar-status-row">
+          <span class="toolbar-badge">Repo:</span>
+          <span id="roadmap-ws-path" class="roadmap-path" title="Current Workspace">Current Project</span>
+        </div>
+      </div>
+
+      <!-- Collapsible Intel Accordion (Aperant Project & Competitor Insights) -->
+      <details class="intel-accordion" id="details-intel">
+        <summary class="intel-summary">
+          <div class="intel-summary-left">
+            <span class="intel-summary-icon">📊</span>
+            <span class="intel-summary-title">Project & Market Intelligence</span>
+          </div>
+          <span class="intel-toggle-pill">Show / Hide ▾</span>
+        </summary>
+        <div class="roadmap-intel-grid">
+          <!-- Discovery Card -->
+          <div class="intel-card" id="card-discovery">
+            <div class="intel-card-header">
+              <div class="intel-title-group">
+                <span class="intel-icon">🔬</span>
+                <h3>Project Discovery</h3>
+              </div>
+              <span class="badge" id="discovery-type-badge">Analyzing...</span>
+            </div>
+            <div class="intel-card-body" id="discovery-card-content">
+              <div class="skeleton-loader">Loading project discovery...</div>
+            </div>
+          </div>
+
+          <!-- Competitor Card -->
+          <div class="intel-card" id="card-competitors">
+            <div class="intel-card-header">
+              <div class="intel-title-group">
+                <span class="intel-icon">🥊</span>
+                <h3>Competitor Intelligence</h3>
+              </div>
+              <span class="badge badge-amber" id="competitor-count-badge">Analyzing...</span>
+            </div>
+            <div class="intel-card-body" id="competitor-card-content">
+              <div class="skeleton-loader">Loading competitor intelligence...</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- MoSCoW Filter & Progress Summary Bar -->
+      <div class="roadmap-filter-bar">
+        <div class="filter-pills filter-pills-compact" id="moscow-pills">
+          <button class="pill active" data-moscow="ALL">All</button>
+          <button class="pill" data-moscow="must">🔴 Must</button>
+          <button class="pill" data-moscow="should">🟡 Should</button>
+          <button class="pill" data-moscow="could">🟢 Could</button>
+          <button class="pill" data-moscow="wont">⚪ Won't</button>
+        </div>
+        <div class="roadmap-meta-info" id="roadmap-summary-text">
+          Syncing roadmap...
+        </div>
+      </div>
+
+      <!-- Phased Roadmap Board Container -->
+      <div class="roadmap-phases-container" id="roadmap-phases-container">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- VIEW 3: IDEATION & CODEBASE AUDITS (APERANT MODEL) -->
+    <section id="view-ideation" class="view-panel hidden">
+      <!-- Ideation Toolbar -->
+      <div class="roadmap-toolbar">
+        <div class="toolbar-primary-row">
+          <button id="btn-run-ideation" class="btn btn-primary btn-generate-main" title="Deep AST audit for code improvements, performance, & security">
+            💡 Run Ideation Audit
+          </button>
+          <div class="roadmap-sub-actions">
+            <button id="btn-export-ideation" class="btn btn-xs btn-secondary" title="Export IDEATION.md to project root">
+              📄 Export IDEATION.md
+            </button>
+            <button id="btn-clear-ideation" class="btn btn-xs btn-danger" title="Delete ideation audit report for this project">
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+        <div class="toolbar-status-row">
+          <span class="toolbar-badge">Target:</span>
+          <span id="ideation-ws-path" class="roadmap-path">Automated Static Audit</span>
+        </div>
+      </div>
+
+      <!-- Compact Health Score Strip -->
+      <div class="health-scores-grid health-scores-strip">
+        <div class="health-score-card health-score-chip" title="Vulnerability & credential risk">
+          <div class="health-chip-left">
+            <span class="health-icon">🛡️</span>
+            <span class="health-title">Security</span>
+          </div>
+          <div class="health-score-val" id="score-security">--</div>
+        </div>
+
+        <div class="health-score-card health-score-chip" title="I/O & runtime efficiency">
+          <div class="health-chip-left">
+            <span class="health-icon">⚡</span>
+            <span class="health-title">Perf</span>
+          </div>
+          <div class="health-score-val" id="score-performance">--</div>
+        </div>
+
+        <div class="health-score-card health-score-chip" title="Modularity & tech debt">
+          <div class="health-chip-left">
+            <span class="health-icon">🧹</span>
+            <span class="health-title">Quality</span>
+          </div>
+          <div class="health-score-val" id="score-quality">--</div>
+        </div>
+
+        <div class="health-score-card health-score-chip" title="Code-revealed opportunities">
+          <div class="health-chip-left">
+            <span class="health-icon">🚀</span>
+            <span class="health-title">Ideas</span>
+          </div>
+          <div class="health-score-val" id="score-innovation">--</div>
+        </div>
+      </div>
+
+      <!-- Ideation Filter Pills -->
+      <div class="roadmap-filter-bar">
+        <div class="filter-pills filter-pills-compact" id="ideation-category-pills">
+          <button class="pill active" data-ideation-cat="ALL">All</button>
+          <button class="pill" data-ideation-cat="code_improvements">🚀 Features</button>
+          <button class="pill" data-ideation-cat="performance_optimizations">⚡ Perf</button>
+          <button class="pill" data-ideation-cat="security_hardening">🛡️ Security</button>
+          <button class="pill" data-ideation-cat="code_quality">🧹 Quality</button>
+        </div>
+        <div class="roadmap-meta-info" id="ideation-summary-text">
+          Syncing ideation discoveries...
+        </div>
+      </div>
+
+      <!-- Ideation Cards Grid -->
+      <div class="ideation-cards-container" id="ideation-cards-container">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- VIEW 4: AGENCY AGENTS INTEGRATION -->
+    <section id="view-agency" class="view-panel hidden">
+      <!-- Agency Toolbar -->
+      <div class="roadmap-toolbar">
+        <div class="toolbar-primary-row">
+          <button id="btn-integrate-agency" class="btn btn-primary btn-generate-main" title="Generate docs/agency-registry.md, /agency-pipeline, and inter-agent calling rules">
+            ⚡ Integrate Agency
+          </button>
+          <button id="btn-refresh-agency" class="btn btn-xs btn-secondary" title="Re-scan installed agency skills">
+            🔄 Re-Scan
+          </button>
+        </div>
+        <div class="toolbar-status-row">
+          <span class="toolbar-badge">Ecosystem:</span>
+          <span id="agency-ws-path" class="roadmap-path">msitarzewski/agency-agents-app</span>
+        </div>
+      </div>
+
+      <!-- Compact Agency Metrics Strip -->
+      <div class="health-scores-grid health-scores-strip">
+        <div class="health-score-card health-score-chip">
+          <div class="health-chip-left">
+            <span class="health-icon">🤖</span>
+            <span class="health-title">Agents</span>
+          </div>
+          <div class="health-score-val score-good" id="agency-count-val">0</div>
+        </div>
+
+        <div class="health-score-card health-score-chip">
+          <div class="health-chip-left">
+            <span class="health-icon">📋</span>
+            <span class="health-title">Status</span>
+          </div>
+          <div class="health-score-val" id="agency-status-val">--</div>
+          <div class="health-score-desc hidden" id="agency-status-desc"></div>
+        </div>
+
+        <div class="health-score-card health-score-chip">
+          <div class="health-chip-left">
+            <span class="health-icon">🔀</span>
+            <span class="health-title">Router</span>
+          </div>
+          <div class="health-score-val text-blue" style="font-size: 0.85rem;">/pipeline</div>
+        </div>
+
+        <div class="health-score-card health-score-chip">
+          <div class="health-chip-left">
+            <span class="health-icon">🔄</span>
+            <span class="health-title">Handoff</span>
+          </div>
+          <div class="health-score-val text-purple" style="font-size: 0.85rem;">[CALL]</div>
+        </div>
+      </div>
+
+      <!-- Generated Files Checklist Banner -->
+      <div class="agency-files-banner" id="agency-files-status">
+        <div class="agency-file-pill" id="file-check-registry"><span>⚪</span> registry.md</div>
+        <div class="agency-file-pill" id="file-check-pipeline"><span>⚪</span> pipeline.md</div>
+        <div class="agency-file-pill" id="file-check-rule"><span>⚪</span> rules.md</div>
+        <div class="agency-file-pill" id="file-check-readme"><span>⚪</span> readme.md</div>
+      </div>
+
+      <!-- Quick Action Prompt Shortcuts (Scrollable strip) -->
+      <div class="agency-prompts-row">
+        <span class="agency-prompts-label">⚡ Prompts:</span>
+        <div class="agency-prompts-scroll">
+          <button class="btn btn-xs btn-secondary btn-agency-quick-prompt" data-template-key="new-project">🚀 New Project</button>
+          <button class="btn btn-xs btn-secondary btn-agency-quick-prompt" data-template-key="new-feature">✨ Add Feature</button>
+          <button class="btn btn-xs btn-secondary btn-agency-quick-prompt" data-template-key="deep-research">🔬 Research</button>
+          <button class="btn btn-xs btn-secondary btn-agency-quick-prompt" data-template-key="reality-check">🛡️ Reality Check</button>
+        </div>
+      </div>
+
+      <!-- Searchable Agents Directory -->
+      <div class="controls-bar" style="margin-top: 14px; margin-bottom: 8px;">
+        <div class="search-wrapper">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="agency-search-input" placeholder="Search 280+ Agency specialists..." autocomplete="off">
+        </div>
+        <div class="roadmap-meta-info" id="agency-agents-counter">Loading agents...</div>
+      </div>
+
+      <!-- Agents Directory Grid -->
+      <div class="agency-directory-grid" id="agency-directory-grid">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+  </div>
+
+  <!-- Variable Filling Modal (Paste Prompt) -->
+  <div class="modal-overlay hidden" id="paste-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="paste-modal-title">Fill Variables & Paste</h2>
+          <p class="modal-subtitle" id="paste-modal-desc">Configure template variables for this prompt before pasting.</p>
+        </div>
+        <button class="modal-close" id="paste-modal-close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="paste-layout">
+          <!-- Variables Inputs Column -->
+          <div class="variables-form" id="variables-inputs-container">
+            <!-- Dynamically generated inputs -->
+          </div>
+
+          <!-- Live Render Preview Column -->
+          <div class="preview-column">
+            <div class="preview-header">
+              <span class="preview-title">Live Preview (Ready to Paste)</span>
+              <span class="char-count" id="preview-char-count">0 characters</span>
+            </div>
+            <pre class="preview-box" id="preview-box"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="paste-modal-cancel">Cancel</button>
+        <button class="btn btn-primary btn-paste-action" id="btn-confirm-paste">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy & Paste to Clipboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit / Create Prompt Modal -->
+  <div class="modal-overlay hidden" id="edit-modal">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="edit-modal-title">Create New Prompt</h2>
+          <p class="modal-subtitle">Use {{variable_name}} or {{variable:defaultValue}} for dynamic inputs.</p>
+        </div>
+        <button class="modal-close" id="edit-modal-close">&times;</button>
+      </div>
+
+      <form id="prompt-form" class="modal-body">
+        <input type="hidden" id="form-prompt-id">
+
+        <div class="form-group">
+          <label for="form-title">Title *</label>
+          <input type="text" id="form-title" required placeholder="e.g. Senior Code Review">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="form-category">Category</label>
+            <input type="text" id="form-category" list="category-suggestions" placeholder="e.g. Review, Debugging, Dev">
+            <datalist id="category-suggestions"></datalist>
+          </div>
+          <div class="form-group flex-1">
+            <label for="form-tags">Tags (comma-separated)</label>
+            <input type="text" id="form-tags" placeholder="e.g. typescript, quality, tdd">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="form-description">Description</label>
+          <input type="text" id="form-description" placeholder="Short description of what this prompt does">
+        </div>
+
+        <div class="form-group">
+          <div class="template-header">
+            <label for="form-template">Prompt Template *</label>
+            <span class="detected-vars" id="detected-vars-pill">0 variables detected</span>
+          </div>
+          <textarea id="form-template" rows="9" required placeholder="Write your prompt here... Use {{variable_name}} or {{variable:default}} for placeholders."></textarea>
+        </div>
+      </form>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="edit-modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-prompt">Save Prompt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div class="modal-overlay hidden" id="import-modal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2 class="modal-title">Import Prompts</h2>
+        <button class="modal-close" id="import-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Paste your exported JSON prompt list below:</p>
+        <textarea id="import-json-text" rows="8" placeholder="[ { &quot;title&quot;: &quot;...&quot;, &quot;template&quot;: &quot;...&quot; } ]"></textarea>
+        <div class="import-mode-options">
+          <label><input type="radio" name="import-mode" value="merge" checked> Merge with existing</label>
+          <label><input type="radio" name="import-mode" value="replace"> Replace all existing</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="import-modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-confirm-import">Import Prompts</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Workspace Switcher Modal -->
+  <div class="modal-overlay hidden" id="workspace-modal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Switch Active Project</h2>
+          <p class="modal-subtitle">Point Antigravity Tools to any project folder on your machine.</p>
+        </div>
+        <button class="modal-close" id="workspace-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-workspace-path">Target Project Folder Path *</label>
+          <input type="text" id="input-workspace-path" placeholder="e.g. D:\BackUp\programing_projects\ProCal" style="width: 100%; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+        </div>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 8px;">
+          Roadmaps, Ideations, and Agency integration files will be analyzed and saved in this directory.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="workspace-modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-confirm-switch-ws">Set Active Project</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden">
+    <div class="toast-content" id="toast-message"></div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

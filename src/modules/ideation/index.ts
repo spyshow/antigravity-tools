@@ -101,6 +101,26 @@ export class IdeationModule implements PluginModule {
         return true;
       }
 
+      // POST /api/ideation/delete
+      if (pathname === '/api/ideation/delete' && method === 'POST') {
+        const body = await parseBody();
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
+        const updated = await this.storage.deleteIdea(body.ideaId, targetPath);
+        const finalized = this.service.finalizeReport(updated);
+        await this.storage.saveReport(finalized, targetPath);
+        sendJson(200, finalized);
+        return true;
+      }
+
+      // POST /api/ideation/clear or DELETE /api/ideation
+      if ((pathname === '/api/ideation/clear' && method === 'POST') || (pathname === '/api/ideation' && method === 'DELETE')) {
+        const body = method === 'POST' ? await parseBody() : {};
+        const targetPath = normalizeWorkspacePath(body.workspacePath || body.workspace || wsPath);
+        await this.storage.clearReport(targetPath);
+        sendJson(200, { success: true, workspace: targetPath });
+        return true;
+      }
+
       // POST /api/ideation/export
       if (pathname === '/api/ideation/export' && method === 'POST') {
         const body = await parseBody();

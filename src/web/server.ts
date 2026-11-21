@@ -14,6 +14,7 @@ import {
 } from '../modules/workspace.js';
 import { describeAISettings, saveAISettings } from '../modules/ai/settings.js';
 import { execAgentApi } from '../modules/ai/antigravity-agent.js';
+import { copyToClipboard } from '../modules/prompts/clipboard.js';
 
 export class WebDashboardServer {
   private server: http.Server | null = null;
@@ -251,6 +252,19 @@ export class WebDashboardServer {
             sendJson(200, describeAISettings());
             return;
           }
+        }
+
+        // System clipboard bridge endpoint (works inside sandboxed sidecar iframes)
+        if (url.pathname === '/api/clipboard' && method === 'POST') {
+          const body = await parseBody();
+          const text = typeof body.text === 'string' ? body.text : '';
+          if (!text) {
+            sendJson(400, { success: false, error: 'Missing text to copy' });
+            return;
+          }
+          const result = await copyToClipboard(text);
+          sendJson(result.success ? 200 : 500, result);
+          return;
         }
 
         // Auto-synchronize workspace if passed as query parameter

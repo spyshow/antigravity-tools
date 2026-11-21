@@ -85,7 +85,16 @@ test('IdeationStorage persists report and promotes ideation finding into active 
   assert.ok(promotedFeat, 'Promoted feature must exist in roadmap');
   assert.strictEqual(promotedFeat!.title, report.codeImprovements.find(i => i.id === 'ci-001')!.title);
 
-  // 5. Clean up
+  // 5. Delete a single ideation item
+  const afterDelete = await ideationStorage.deleteIdea('ci-001', tmpDir);
+  assert.ok(!afterDelete.codeImprovements.some(i => i.id === 'ci-001'), 'Deleted idea should be removed');
+
+  // 6. Clear entire ideation report
+  await ideationStorage.clearReport(tmpDir);
+  const afterClear = await ideationStorage.getReport(tmpDir);
+  assert.strictEqual(afterClear, null);
+
+  // 7. Clean up
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 

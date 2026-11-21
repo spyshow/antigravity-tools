@@ -1,4 +1,5 @@
 import { execFile } from 'child_process';
+import { Worker } from 'worker_threads';
 
 export interface AgentTaskOptions {
   workspacePath: string;
@@ -44,36 +45,64 @@ export function execAgentApi(args: string[], projectId?: string): Promise<any> {
 }
 
 /**
- * Dispatches a background Antigravity AI conversation to read the opened project's code
- * and save an enriched Roadmap or Ideation report back into the plugin via MCP tools.
+ * Runs a Roadmap or Ideation scan in an isolated Node.js worker_threads background worker
+ * so file I/O and AI requests never block the sidecar HTTP server event loop and never
+ * spawn visible conversations in the Antigravity sidebar.
+ */
+export function runScanInWorker<T = any>(options: AgentTaskOptions): Promise<T> {
+  return new Promise((resolve, reject) => {
+    try {
+      const workerUrl = new URL('./scan-worker.js', import.meta.url);
+      const worker = new Worker(workerUrl, {
+        workerData: {
+          workspacePath: options.workspacePath,
+          taskType: options.taskType
+        }
+      });
+
+      let settled = false;
+
+      worker.on('message', (msg: { ok: boolean; result?: T; error?: string }) => {
+        if (settled) return;
+        settled = true;
+        if (msg && msg.ok) {
+          resolve(msg.result as T);
+        } else {
+          reject(new Error(msg?.error || 'Background scan worker failed'));
+        }
+      });
+
+      worker.on('error', (err) => {
+        if (settled) return;
+        settled = true;
+        reject(err);
+      });
+
+      worker.on('exit', (code) => {
+        if (settled) return;
+        settled = true;
+        if (code !== 0) {
+          reject(new Error(`Scan worker stopped with exit code ${code}`));
+        }
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+/**
+ * Runs background analysis purely inside a Node.js worker thread without calling
+ * `agentapi new-conversation` (so it never clutters the Antigravity sidebar).
  */
 export async function triggerBackgroundAntigravityAnalysis(options: AgentTaskOptions): Promise<{
   triggered: boolean;
   conversationId?: string;
 }> {
-  if (!isAntigravityAgentAvailable()) {
+  try {
+    await runScanInWorker(options);
+    return { triggered: true };
+  } catch {
     return { triggered: false };
   }
-
-  const ws = options.workspacePath;
-  const prompt = options.taskType === 'roadmap'
-    ? `Read the source code of the project at "${ws}". Understand its existing functions, API routes, database models, and UI views. Then call the "roadmap_save_generated" MCP tool for workspacePath="${ws}" with a tailored ProjectDiscovery (listing actual existing features found in the code), CompetitorAnalysis, and a MoSCoW RoadmapDocument containing 8 NEW features that are NOT yet implemented in "${ws}". Do NOT modify any project source files.`
-    : `Read the source code of the project at "${ws}". Inspect its real files, functions, routes, and models. Then call the "ideation_save_generated" MCP tool for workspacePath="${ws}" with code-revealed new feature ideas (codeImprovements), performanceOptimizations, securityVulnerabilities, and codeQualityIssues referencing real file paths in "${ws}". Do NOT modify any project source files.`;
-
-  const res = await execAgentApi([
-    'new-conversation',
-    '--model',
-    'flash',
-    '--title',
-    `[Antigravity Tools] ${options.taskType === 'roadmap' ? 'Roadmap' : 'Ideation'} Code Scan: ${ws.split(/[\\/]/).pop()}`,
-    prompt
-  ]);
-
-  if (res && (res.conversationId || res.response?.conversationId)) {
-    return {
-      triggered: true,
-      conversationId: res.conversationId || res.response?.conversationId
-    };
-  }
-  return { triggered: Boolean(res) };
 }

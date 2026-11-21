@@ -347,11 +347,9 @@ async function executePaste(promptId, variables = {}) {
     });
 
     if (res.success) {
-      // Also write directly in browser clipboard as secondary guarantee
-      if (navigator.clipboard && res.result && res.result.rendered) {
-        try {
-          await navigator.clipboard.writeText(res.result.rendered);
-        } catch {}
+      // Also write directly in browser/system clipboard as secondary guarantee
+      if (res.result && res.result.rendered) {
+        await copyTextToClipboard(res.result.rendered);
       }
 
       showToast(`Copied "${res.result.title}" to clipboard! Ready to paste.`, 'success');
@@ -402,13 +400,69 @@ function updateDetectedVarsPill() {
 }
 
 // Toast
-function showToast(msg, type = 'info') {
+function showToast(msg, type = 'info', persistent = false) {
   toastMessage.textContent = msg;
   toast.classList.remove('hidden');
   clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => {
-    toast.classList.add('hidden');
-  }, 3500);
+  if (!persistent) {
+    toast._timer = setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 3500);
+  }
+}
+
+// Cross-environment clipboard copy (works in sandboxed sidecar iframes via backend OS clipboard bridge + browser fallbacks)
+async function copyTextToClipboard(text) {
+  if (!text) return false;
+
+  let serverCopied = false;
+  try {
+    const res = await fetch('/api/clipboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: String(text) })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.success) serverCopied = true;
+    }
+  } catch {}
+
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    try {
+      await navigator.clipboard.writeText(String(text));
+      return true;
+    } catch {}
+  }
+
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = String(text);
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-9999px';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    if (ok) return true;
+  } catch {}
+
+  return serverCopied;
+}
+
+function flashButtonCopied(btn, copiedLabel = '✅ Copied!') {
+  if (!btn || btn._copyTimer) return;
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = copiedLabel;
+  btn.disabled = true;
+  btn._copyTimer = setTimeout(() => {
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+    btn._copyTimer = null;
+  }, 1800);
 }
 
 // Utility
@@ -987,6 +1041,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </svg>
                 Copy Prompt for Feature
               </button>
+              <button class="btn-feature-delete" data-delete-feature-id="${feat.id}" title="Delete this feature from roadmap">
+                🗑️ Delete
+              </button>
             </div>
           </div>
         `;
@@ -1038,17 +1095,43 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Attach "Copy Prompt for Feature" listeners
     container.querySelectorAll('.btn-feature-prompt').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
+      btn.addEventListener('click', async () => {
         const featId = btn.getAttribute('data-feature-id');
         const feat = roadmap.features.find(f => f.id === featId);
         if (!feat) return;
 
         const promptText = generatePromptForFeature(feat, roadmap);
-        try {
-          await navigator.clipboard.writeText(promptText);
-          showToast(`📋 Copied implementation prompt for [${feat.id}] ${feat.title}!`);
-        } catch {
+        const ok = await copyTextToClipboard(promptText);
+        if (ok) {
+          flashButtonCopied(btn, '✅ Copied Prompt!');
+          showToast(`📋 Copied implementation prompt for [${feat.id}] ${feat.title}!`, 'success');
+        } else {
           showToast('Failed to copy to clipboard', 'error');
+        }
+      });
+    });
+
+    // Attach "Delete Feature" listeners
+    container.querySelectorAll('.btn-feature-delete').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const featId = btn.getAttribute('data-delete-feature-id');
+        if (!featId) return;
+        btn.disabled = true;
+        try {
+          const updatedRoadmap = await api('/api/roadmap/feature/delete', {
+            method: 'POST',
+            body: JSON.stringify({ featureId: featId })
+          });
+          if (updatedRoadmap && !updatedRoadmap.error) {
+            roadmapData = updatedRoadmap;
+            showToast(`🗑️ Deleted feature [${featId}] from roadmap.`, 'success');
+            renderRoadmapBoard(roadmapData);
+          } else {
+            throw new Error(updatedRoadmap?.error || 'Failed to delete feature');
+          }
+        } catch (err) {
+          btn.disabled = false;
+          showToast(`Failed to delete feature: ${err.message}`, 'error');
         }
       });
     });
@@ -1089,11 +1172,36 @@ Please inspect the current codebase, write clean and modular code fulfilling all
     });
   });
 
+  function showRoadmapLoadingBanner(message) {
+    const summaryText = document.getElementById('roadmap-summary-text');
+    if (summaryText) summaryText.textContent = message;
+    const container = document.getElementById('roadmap-phases-container');
+    if (container) {
+      const existingBanner = document.getElementById('roadmap-loading-banner');
+      if (existingBanner) existingBanner.remove();
+      const banner = document.createElement('div');
+      banner.id = 'roadmap-loading-banner';
+      banner.style.cssText = 'padding: 14px 16px; margin-bottom: 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.14); border: 1px solid rgba(99, 102, 241, 0.4); color: var(--text-primary); font-weight: 500; display: flex; align-items: center; gap: 10px;';
+      banner.innerHTML = `<span style="display:inline-block; animation: pulse 1.2s infinite;">⏳</span> <span>${escapeHtml(message)}</span>`;
+      container.prepend(banner);
+    }
+  }
+
   // Action Buttons
-  document.getElementById('btn-run-discovery').addEventListener('click', async () => {
-    showToast('🔬 Scanning active project code & generating new feature suggestions...');
+  const btnRunDiscovery = document.getElementById('btn-run-discovery');
+  const btnRunCompetitors = document.getElementById('btn-run-competitors');
+  const btnRunGenerate = document.getElementById('btn-run-generate');
+  const btnExportMarkdown = document.getElementById('btn-export-markdown');
+
+  btnRunDiscovery.addEventListener('click', async () => {
+    const origHtml = btnRunDiscovery.innerHTML;
+    btnRunDiscovery.disabled = true;
+    btnRunDiscovery.textContent = '⏳ Scanning...';
+    showRoadmapLoadingBanner('Scanning active project code & synthesizing roadmap...');
+    showToast('⏳ Scanning active project code & generating new feature suggestions...', 'info', true);
     try {
       const res = await api('/api/roadmap/discovery', { method: 'POST' });
+      if (res && res.error) throw new Error(res.error);
       discoveryData = res;
       if (res && res._competitors) competitorData = res._competitors;
       if (res && res._roadmap) roadmapData = res._roadmap;
@@ -1101,49 +1209,103 @@ Please inspect the current codebase, write clean and modular code fulfilling all
       renderCompetitorCard(competitorData);
       renderRoadmapBoard(roadmapData);
       await loadRoadmapData();
-      showToast(`Code scan & roadmap complete for ${discoveryData?.projectName || currentWorkspaceName}!`, 'success');
+      showToast(`✅ Code scan & roadmap complete for ${discoveryData?.projectName || currentWorkspaceName}!`, 'success');
     } catch (err) {
+      renderRoadmapBoard(roadmapData);
       showToast(`Scan failed: ${err.message}`, 'error');
+    } finally {
+      btnRunDiscovery.disabled = false;
+      btnRunDiscovery.innerHTML = origHtml;
     }
   });
 
-  document.getElementById('btn-run-competitors').addEventListener('click', async () => {
-    showToast('🥊 Analyzing competitors and user pain points...');
+  btnRunCompetitors.addEventListener('click', async () => {
+    const origHtml = btnRunCompetitors.innerHTML;
+    btnRunCompetitors.disabled = true;
+    btnRunCompetitors.textContent = '⏳ Analyzing...';
+    showToast('⏳ Analyzing competitors and user pain points...', 'info', true);
     try {
       const res = await api('/api/roadmap/competitors', { method: 'POST' });
+      if (res && res.error) throw new Error(res.error);
       competitorData = res;
       renderCompetitorCard(competitorData);
-      showToast('Competitor intelligence analyzed!', 'success');
+      const detailsIntel = document.getElementById('details-intel');
+      if (detailsIntel) detailsIntel.open = true;
+      showToast('✅ Competitor intelligence analyzed!', 'success');
     } catch (err) {
       showToast(`Competitor analysis failed: ${err.message}`, 'error');
+    } finally {
+      btnRunCompetitors.disabled = false;
+      btnRunCompetitors.innerHTML = origHtml;
     }
   });
 
-  document.getElementById('btn-run-generate').addEventListener('click', async () => {
-    showToast('⚡ Generating strategic MoSCoW roadmap...');
+  btnRunGenerate.addEventListener('click', async () => {
+    const origHtml = btnRunGenerate.innerHTML;
+    btnRunGenerate.disabled = true;
+    btnRunGenerate.textContent = '⏳ Generating Roadmap...';
+    showRoadmapLoadingBanner('Analyzing project codebase & generating strategic MoSCoW roadmap...');
+    showToast('⏳ Generating strategic MoSCoW roadmap...', 'info', true);
     try {
       const res = await api('/api/roadmap/generate', { method: 'POST' });
+      if (res && res.error) throw new Error(res.error);
       roadmapData = res;
       await loadRoadmapData();
-      showToast('Roadmap generated successfully!', 'success');
+      const featCount = roadmapData?.features?.length || 0;
+      showToast(`✅ Roadmap generated (${featCount} features across ${roadmapData?.phases?.length || 3} phases)!`, 'success');
     } catch (err) {
+      renderRoadmapBoard(roadmapData);
       showToast(`Roadmap generation failed: ${err.message}`, 'error');
+    } finally {
+      btnRunGenerate.disabled = false;
+      btnRunGenerate.innerHTML = origHtml;
     }
   });
 
-  document.getElementById('btn-export-markdown').addEventListener('click', async () => {
-    showToast('📄 Exporting ROADMAP.md to project root...');
+  btnExportMarkdown.addEventListener('click', async () => {
+    const origHtml = btnExportMarkdown.innerHTML;
+    btnExportMarkdown.disabled = true;
+    btnExportMarkdown.textContent = '⏳ Exporting...';
+    showToast('⏳ Exporting ROADMAP.md to project root...', 'info', true);
     try {
       const res = await api('/api/roadmap/export', { method: 'POST' });
-      if (res.success) {
-        showToast(`Saved ROADMAP.md successfully to: ${res.filePath}`, 'success');
+      if (res && res.success) {
+        showToast(`✅ Saved ROADMAP.md to: ${res.filePath}`, 'success');
       } else {
-        showToast(res.error || 'Failed to export ROADMAP.md', 'error');
+        showToast((res && res.error) || 'Failed to export ROADMAP.md', 'error');
       }
     } catch (err) {
       showToast(`Export failed: ${err.message}`, 'error');
+    } finally {
+      btnExportMarkdown.disabled = false;
+      btnExportMarkdown.innerHTML = origHtml;
     }
   });
+
+  const btnClearRoadmap = document.getElementById('btn-clear-roadmap');
+  if (btnClearRoadmap) {
+    btnClearRoadmap.addEventListener('click', async () => {
+      const origHtml = btnClearRoadmap.innerHTML;
+      btnClearRoadmap.disabled = true;
+      btnClearRoadmap.textContent = '⏳ Deleting...';
+      try {
+        const res = await api('/api/roadmap/clear', { method: 'POST' });
+        if (res && res.error) throw new Error(res.error);
+        roadmapData = null;
+        discoveryData = null;
+        competitorData = null;
+        renderDiscoveryCard(null);
+        renderCompetitorCard(null);
+        renderRoadmapBoard(null);
+        showToast('🗑️ Deleted roadmap & discovery data for this project.', 'success');
+      } catch (err) {
+        showToast(`Delete failed: ${err.message}`, 'error');
+      } finally {
+        btnClearRoadmap.disabled = false;
+        btnClearRoadmap.innerHTML = origHtml;
+      }
+    });
+  }
 
   // ==========================================================================
   // IDEATION & CODEBASE AUDITS LOGIC (APERANT MODEL)
@@ -1191,17 +1353,40 @@ Please inspect the current codebase, write clean and modular code fulfilling all
   };
 
   async function runIdeationAudit(showNotification = true) {
-    if (showNotification) showToast('💡 Running deep codebase ideation scan...');
+    const btnRunIdeation = document.getElementById('btn-run-ideation');
+    const origHtml = btnRunIdeation ? btnRunIdeation.innerHTML : '';
+    if (btnRunIdeation) {
+      btnRunIdeation.disabled = true;
+      btnRunIdeation.textContent = '⏳ Auditing Codebase...';
+    }
+    const container = document.getElementById('ideation-cards-container');
+    if (container) {
+      const existingBanner = document.getElementById('ideation-loading-banner');
+      if (existingBanner) existingBanner.remove();
+      const banner = document.createElement('div');
+      banner.id = 'ideation-loading-banner';
+      banner.style.cssText = 'padding: 14px 16px; margin-bottom: 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.14); border: 1px solid rgba(99, 102, 241, 0.4); color: var(--text-primary); font-weight: 500; display: flex; align-items: center; gap: 10px;';
+      banner.innerHTML = '<span>⏳</span> <span>Running deep codebase ideation & 4-pillar audit...</span>';
+      container.prepend(banner);
+    }
+    if (showNotification) showToast('⏳ Running deep codebase ideation scan...', 'info', true);
     try {
       const res = await api('/api/ideation/analyze', { method: 'POST' });
+      if (res && res.error) throw new Error(res.error);
       if (res) {
         ideationReport = res;
         renderHealthScores(ideationReport.healthScores);
         renderIdeationCards(ideationReport);
-        if (showNotification) showToast('Ideation audit completed!', 'success');
+        if (showNotification) showToast('✅ Ideation audit completed!', 'success');
       }
     } catch (err) {
+      renderIdeationCards(ideationReport);
       if (showNotification) showToast(`Ideation audit failed: ${err.message}`, 'error');
+    } finally {
+      if (btnRunIdeation) {
+        btnRunIdeation.disabled = false;
+        btnRunIdeation.innerHTML = origHtml;
+      }
     }
   }
 
@@ -1374,6 +1559,9 @@ Please inspect the current codebase, write clean and modular code fulfilling all
                 </svg>
                 Copy Prompt
               </button>
+              <button class="btn-feature-delete btn-delete-idea" data-delete-idea-id="${item.id}" title="Delete this finding from report">
+                🗑️ Delete
+              </button>
             </div>
           </div>
         </div>
@@ -1412,11 +1600,38 @@ Please inspect the current codebase, write clean and modular code fulfilling all
         if (!item) return;
 
         const promptText = generatePromptForIdeationItem(item, report);
-        try {
-          await navigator.clipboard.writeText(promptText);
-          showToast(`📋 Copied implementation prompt for [${item.id}] ${item.title}!`);
-        } catch {
+        const ok = await copyTextToClipboard(promptText);
+        if (ok) {
+          flashButtonCopied(btn, '✅ Copied!');
+          showToast(`📋 Copied implementation prompt for [${item.id}] ${item.title}!`, 'success');
+        } else {
           showToast('Failed to copy to clipboard', 'error');
+        }
+      });
+    });
+
+    // Attach Delete Idea Listeners
+    container.querySelectorAll('.btn-delete-idea').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const ideaId = btn.getAttribute('data-delete-idea-id');
+        if (!ideaId) return;
+        btn.disabled = true;
+        try {
+          const updatedReport = await api('/api/ideation/delete', {
+            method: 'POST',
+            body: JSON.stringify({ ideaId })
+          });
+          if (updatedReport && !updatedReport.error) {
+            ideationReport = updatedReport;
+            renderHealthScores(ideationReport.healthScores);
+            renderIdeationCards(ideationReport);
+            showToast(`🗑️ Deleted finding [${ideaId.toUpperCase()}] from ideation report.`, 'success');
+          } else {
+            throw new Error(updatedReport?.error || 'Failed to delete finding');
+          }
+        } catch (err) {
+          btn.disabled = false;
+          showToast(`Failed to delete finding: ${err.message}`, 'error');
         }
       });
     });
@@ -1457,19 +1672,48 @@ Inspect the referenced files, implement the recommended solution adhering to pro
   // Action Buttons
   document.getElementById('btn-run-ideation').addEventListener('click', () => runIdeationAudit(true));
 
-  document.getElementById('btn-export-ideation').addEventListener('click', async () => {
-    showToast('📄 Exporting IDEATION.md to project root...');
+  const btnExportIdeation = document.getElementById('btn-export-ideation');
+  btnExportIdeation.addEventListener('click', async () => {
+    const origHtml = btnExportIdeation.innerHTML;
+    btnExportIdeation.disabled = true;
+    btnExportIdeation.textContent = '⏳ Exporting...';
+    showToast('⏳ Exporting IDEATION.md to project root...', 'info', true);
     try {
       const res = await api('/api/ideation/export', { method: 'POST' });
-      if (res.success) {
-        showToast(`Saved IDEATION.md successfully to: ${res.filePath}`, 'success');
+      if (res && res.success) {
+        showToast(`✅ Saved IDEATION.md to: ${res.filePath}`, 'success');
       } else {
-        showToast(res.error || 'Failed to export IDEATION.md', 'error');
+        showToast((res && res.error) || 'Failed to export IDEATION.md', 'error');
       }
     } catch (err) {
       showToast(`Export failed: ${err.message}`, 'error');
+    } finally {
+      btnExportIdeation.disabled = false;
+      btnExportIdeation.innerHTML = origHtml;
     }
   });
+
+  const btnClearIdeation = document.getElementById('btn-clear-ideation');
+  if (btnClearIdeation) {
+    btnClearIdeation.addEventListener('click', async () => {
+      const origHtml = btnClearIdeation.innerHTML;
+      btnClearIdeation.disabled = true;
+      btnClearIdeation.textContent = '⏳ Deleting...';
+      try {
+        const res = await api('/api/ideation/clear', { method: 'POST' });
+        if (res && res.error) throw new Error(res.error);
+        ideationReport = null;
+        resetHealthScoresUI();
+        renderIdeationCards(null);
+        showToast('🗑️ Deleted ideation audit report for this project.', 'success');
+      } catch (err) {
+        showToast(`Delete failed: ${err.message}`, 'error');
+      } finally {
+        btnClearIdeation.disabled = false;
+        btnClearIdeation.innerHTML = origHtml;
+      }
+    });
+  }
 
   // ==========================================================================
   // AGENCY AGENTS INTEGRATION LOGIC
@@ -1605,10 +1849,11 @@ Inspect the referenced files, implement the recommended solution adhering to pro
     agencyDirectoryGrid.querySelectorAll('.agency-btn-copy-name').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-copy-name');
-        try {
-          await navigator.clipboard.writeText(id);
-          showToast(`📋 Copied agent name: ${id}`);
-        } catch {
+        const ok = await copyTextToClipboard(id);
+        if (ok) {
+          flashButtonCopied(btn, '✅ Copied!');
+          showToast(`📋 Copied agent name: ${id}`, 'success');
+        } else {
           showToast('Failed to copy', 'error');
         }
       });
@@ -1619,10 +1864,11 @@ Inspect the referenced files, implement the recommended solution adhering to pro
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-call-agent');
         const delegationSnippet = `[CALL_AGENT: ${id}]\nContext: <Brief explanation of what has been accomplished so far>\nTask: <Clear, actionable instructions for this specialist>\nConstraints: <Any requirements, tech constraints, or guidelines>`;
-        try {
-          await navigator.clipboard.writeText(delegationSnippet);
-          showToast(`✨ Copied [CALL_AGENT: ${id}] delegation snippet!`);
-        } catch {
+        const ok = await copyTextToClipboard(delegationSnippet);
+        if (ok) {
+          flashButtonCopied(btn, '✅ Copied!');
+          showToast(`✨ Copied [CALL_AGENT: ${id}] delegation snippet!`, 'success');
+        } else {
           showToast('Failed to copy snippet', 'error');
         }
       });
